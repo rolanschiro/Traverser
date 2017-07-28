@@ -211,7 +211,7 @@ public class Main {
 		label.setText("MM/dd/YY");
 		
 		rowsCombo = new Combo(inputComposite, SWT.READ_ONLY);
-		rowsCombo.setItems(new String[] {"5", "10", "15", "20", "30", "50", "100", "200", "300", "400", "500", "1000", "5000"});
+		rowsCombo.setItems(new String[] {"5", "10", "15", "20", "30", "50", "100"});
 		rowsCombo.setBounds(61, 52, 70, 23);
 	
 		Menu menu = new Menu(shlTraverser, SWT.BAR);
@@ -522,7 +522,10 @@ public class Main {
 						for(int i = 0; true; i++){
 							try{
 								ediScraper.scrapeTo(bin.getAbsolutePath(), i);
+								updateSystemOutput(ediScraper.getLog());
 							} catch(NoSuchElementException e1){
+								updateSystemOutput(ediScraper.getLog());
+								e1.printStackTrace();
 								updateSystemOutput("File Creation Complete!");
 								break;
 							}

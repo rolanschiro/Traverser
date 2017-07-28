@@ -42,22 +42,20 @@ public class ALCWebManager {
 		//focuses WebScraper on current tab
 		ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
 		driver.switchTo().window(tabs.get(1));
-		
+		WebElement wait3 = (new WebDriverWait(driver, 10))
+				  .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#R21019224307929393_body > tr:nth-child(2) > td > table:nth-child(5) > tbody > tr:nth-child(1) > td:nth-child(2)")));
 		String shipID = driver.findElementByCssSelector("#R21019224307929393_body > tr:nth-child(2) > td > table:nth-child(5) > tbody > tr:nth-child(1) > td:nth-child(2)").getText();
 		//finds latest update to EDI Shipment Received
 		WebElement wait = (new WebDriverWait(driver, 10))
 				  .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("img[src*='green']")));
 		ArrayList <WebElement> ediUpdates = new ArrayList<WebElement> (driver.findElements(By.cssSelector("img[src*='green']")));
 		ediUpdates.get(ediUpdates.size() - 1).click();
-		
 		//switch to iframe in page, adds information to array
 		driver.switchTo().frame(0);
 		str.add(shipID);
 		WebElement wait2 = (new WebDriverWait(driver, 10))
 				  .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a/font[@color='#FFFFFF']")));
-
 		str.add(driver.findElementByXPath("//a/font[@color='#FFFFFF']").getText());
-		
 		//checks for existing file, creates new file and populates with array
 		Path file = Paths.get(folderPath, str.get(0));
 		
@@ -66,7 +64,6 @@ public class ALCWebManager {
 		} catch (IOException e) {
 			log.add("[ERROR]: Could not write file to bin.");
 		}
-		
 		driver.close();
 		driver.switchTo().window(tabs.get(0));
 	}
@@ -293,7 +290,7 @@ public class ALCWebManager {
 	}
 	
 	public void outputToALX(ArrayList<EDI> edis){
-		List<WebElement> wait2 = (new WebDriverWait(driver, 10))
+		List<WebElement> wait2 = (new WebDriverWait(driver, 30))
 				  .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath("//div[contains(text(), '+')]")));
 
 		List<WebElement> webelems = driver.findElementsByXPath("//div[contains(text(), '+')]");
@@ -325,7 +322,7 @@ public class ALCWebManager {
 			driver.findElementByXPath("//span[text()='Shipment Header']").click();
 			
 			WebElement wait3 = (new WebDriverWait(driver, 10))
-			  .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='P316_FREIGHT_RATE']")));
+			  .until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@id='P316_FREIGHT_RATE']")));
 			
 			driver.findElementByXPath("//input[@id='P316_FREIGHT_RATE']").clear();
 			driver.findElementByXPath("//input[@id='P316_FREIGHT_RATE']").sendKeys(e.getRate());
