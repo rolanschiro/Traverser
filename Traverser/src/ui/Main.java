@@ -213,6 +213,7 @@ public class Main {
 		rowsCombo = new Combo(inputComposite, SWT.READ_ONLY);
 		rowsCombo.setItems(new String[] {"5", "10", "15", "20", "30", "50", "100"});
 		rowsCombo.setBounds(61, 52, 70, 23);
+		rowsCombo.select(6);
 	
 		Menu menu = new Menu(shlTraverser, SWT.BAR);
 		shlTraverser.setMenuBar(menu);
@@ -636,6 +637,9 @@ public class Main {
 		});
 		stopButton.setBounds(173, -1, 45, 57);
 		stopButton.setText("STOP");
+		
+		Label label_1 = new Label(buttonComposite, SWT.SEPARATOR | SWT.VERTICAL);
+		label_1.setBounds(169, -4, 2, 64);
 		
 		progressBar = new ProgressBar(shlTraverser, SWT.NONE);
 		progressBar.setBounds(10, 205, 218, 17);
