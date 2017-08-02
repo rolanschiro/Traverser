@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,7 +87,16 @@ public class Main {
 	 */
 	public void open() {
 		Display display = Display.getDefault();
-		createContents();
+		try {
+			createContents();
+		} catch (Throwable e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String exceptionAsString = sw.toString();
+			
+			updateSystemOutput(exceptionAsString);
+			saveLog("(errorlog)");
+		}
 		shlTraverser.open();
 		shlTraverser.layout();
 		
@@ -296,7 +307,7 @@ public class Main {
 					check = false;
 				}
 				if(prop.getProperty("path") == null){
-					updateSystemOutput("[ERROR]: No path!");
+					updateSystemOutput("[ERROR]: No path specified!");
 					check = false;
 				}
 				
@@ -506,7 +517,7 @@ public class Main {
 					check = false;
 				}
 				if(prop.getProperty("path") == null){
-					updateSystemOutput("[ERROR]: No path!");
+					updateSystemOutput("[ERROR]: No path specified!");
 					check = false;
 				}
 
@@ -771,4 +782,27 @@ public class Main {
 		});
 
 	}
+	
+	private void saveLog(String titleAppend){
+		systemOutput.getDisplay().syncExec(new Runnable(){
+			public void run(){
+				ArrayList <String> log = new ArrayList<String>();
+				for(String str : systemOutput.getText().split("\n")){
+					log.add(str);
+				}
+				LocalDateTime dateTime = LocalDateTime.now();
+				DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss" + titleAppend);
+				String date = (dateTime.format(format));
+
+				Path file = Paths.get(logs.getAbsolutePath(), date);
+				try {
+					Files.write(file, log, StandardCharsets.UTF_8);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+	}
+
 }
