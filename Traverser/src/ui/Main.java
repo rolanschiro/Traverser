@@ -380,16 +380,23 @@ public class Main {
 							
 							if(ediScraper.checkEDIdata(edi)){
 								updateSystemOutput(ediScraper.getLog());
-								try {
-									completeEDIfile(edi);
-									updateSystemOutput(ediScraper.getLog());
+								//if it is a cancelled load, skip completing the file entirely, but still add to completed EDI repo.
+								if(edi.getStatus() == "CANCELLED"){
 									ediRepository.add(edi);
-									updateSystemOutput("Gathered rate, office, and manager for shipment " + f.getName() + ".");
-								} catch (Exception e1) {
-									updateSystemOutput("[ERROR]: Cannot complete file " + f.getName() + ".");
-									incompleteEDIs.add(edi.getShipID());
-									e1.printStackTrace();
-									continue;
+									updateSystemOutput(ediScraper.getLog());
+								}
+								else{	
+									try {
+										completeEDIfile(edi);
+										ediRepository.add(edi);
+										updateSystemOutput(ediScraper.getLog());
+										updateSystemOutput("Gathered rate, office, and manager for shipment " + f.getName() + ".");
+									} catch (Exception e1) {
+										updateSystemOutput("[ERROR]: Cannot complete file " + f.getName() + ".");
+										incompleteEDIs.add(edi.getShipID());
+										e1.printStackTrace();
+										continue;
+									}
 								}
 							}
 							else{
