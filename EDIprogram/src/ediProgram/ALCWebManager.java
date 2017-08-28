@@ -40,6 +40,15 @@ public class ALCWebManager {
 		//opens EDI file
 		driver.findElementByXPath("(//table/tbody/tr/td/a[@target='_blank'])[" + (index + 1) + "]").click();
 		//focuses WebScraper on current tab
+		while(driver.getWindowHandles().size() == 1)
+		{
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
 		driver.switchTo().window(tabs.get(1));
 		
@@ -142,7 +151,8 @@ public class ALCWebManager {
 				try {
 					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
-						WebElement rc = driver.findElementByLinkText("ReCreate EFJ");
+						WebElement rc = (new WebDriverWait(driver, 1))
+								  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("ReCreate EFJ")));
 						rc.click();
 						log.add("Shipment " + e.getShipID() + " was REVISED and recreated.");
 					} catch (Exception e1) {
@@ -166,11 +176,12 @@ public class ALCWebManager {
 				w.click();
 				driver.switchTo().frame(0);
 				try {
+					WebElement rc = (new WebDriverWait(driver, 1))
+							  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Update EFJ Manually")));
 					e.setLoadNumber(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
-						WebElement rc = driver.findElementByLinkText("Update EFJ Manually");
 						rc.click();
-						log.add("Shipment " + e.getShipID() + " was CANCELLED. EFG recreated.");
+						log.add("Shipment " + e.getShipID() + " was CANCELLED. EFJ recreated.");
 					} catch (Exception e1) {
 						log.add("Shipment " + e.getShipID() + " was CANCELLED. EFJ was already recreated.");
 					}

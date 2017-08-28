@@ -73,13 +73,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		
-		try {
-			Main window = new Main();
-			window.open();
-		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Main window = new Main();
+		window.open();
  	}
 
 	/**
