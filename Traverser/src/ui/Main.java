@@ -78,7 +78,7 @@ public class Main {
  	}
 
 	/**
-	 * Open the window.
+	 * Open the window. TEST
 	 */
 	public void open() {
 		Display display = Display.getDefault();
