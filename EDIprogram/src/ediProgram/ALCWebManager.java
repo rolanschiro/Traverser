@@ -52,22 +52,22 @@ public class ALCWebManager {
 		ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
 		driver.switchTo().window(tabs.get(1));
 		
-		WebElement wait3 = (new WebDriverWait(driver, 10))
+		WebElement shipIDwait = (new WebDriverWait(driver, 10))
 				  .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#R21019224307929393_body > tr:nth-child(2) > td > table:nth-child(5) > tbody > tr:nth-child(1) > td:nth-child(2)")));
-		String shipID = driver.findElementByCssSelector("#R21019224307929393_body > tr:nth-child(2) > td > table:nth-child(5) > tbody > tr:nth-child(1) > td:nth-child(2)").getText();
+		String shipID = shipIDwait.getText();
 
 		//finds latest update to EDI Shipment Received
-		WebElement wait = (new WebDriverWait(driver, 10))
-				  .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("img[src*='green']")));
-		ArrayList <WebElement> ediUpdates = new ArrayList<WebElement> (driver.findElements(By.cssSelector("img[src*='green']")));
+		List <WebElement> greenWait = (new WebDriverWait(driver, 10))
+				  .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("img[src*='green']")));
+		ArrayList <WebElement> ediUpdates = new ArrayList<WebElement> (greenWait);
 		ediUpdates.get(ediUpdates.size() - 1).click();
 
 		//switch to iframe in page, adds information to array
 		driver.switchTo().frame(0);
 		str.add(shipID);
-		WebElement wait2 = (new WebDriverWait(driver, 10))
+		WebElement ediTextWait = (new WebDriverWait(driver, 10))
 				  .until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a/font[@color='#FFFFFF']")));
-		str.add(driver.findElementByXPath("//a/font[@color='#FFFFFF']").getText());
+		str.add(ediTextWait.getText());
 
 		//checks for existing file, creates new file and populates with array
 		Path file = Paths.get(folderPath, str.get(0));
@@ -151,7 +151,7 @@ public class ALCWebManager {
 				try {
 					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
-						WebElement rc = (new WebDriverWait(driver, 1))
+						WebElement rc = (new WebDriverWait(driver, 3))
 								  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("ReCreate EFJ")));
 						rc.click();
 						log.add("Shipment " + e.getShipID() + " was REVISED and recreated.");
@@ -176,7 +176,7 @@ public class ALCWebManager {
 				w.click();
 				driver.switchTo().frame(0);
 				try {
-					WebElement rc = (new WebDriverWait(driver, 1))
+					WebElement rc = (new WebDriverWait(driver, 3))
 							  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Update EFJ Manually")));
 					e.setLoadNumber(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
@@ -303,10 +303,9 @@ public class ALCWebManager {
 	}
 	
 	public void outputToALX(ArrayList<EDI> edis){
-		List<WebElement> wait2 = (new WebDriverWait(driver, 30))
+		List<WebElement> webElemsWait = (new WebDriverWait(driver, 30))
 				  .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath("//div[contains(text(), '+')]")));
 
-		List<WebElement> webelems = driver.findElementsByXPath("//div[contains(text(), '+')]");
 		List<WebElement> shipments = driver.findElementsByXPath("//a[@target='_blank']");
 		List<String> shipIDs = new ArrayList<String>();
 
@@ -322,7 +321,7 @@ public class ALCWebManager {
 				continue;
 			}
 			try {
-				webelems.get(index).click();
+				webElemsWait.get(index).click();
 				log.add("Output path established for EDI " + e.getShipID());
 
 			} catch (Exception e1) {
@@ -330,15 +329,15 @@ public class ALCWebManager {
 				continue;
 			}
 			driver.switchTo().frame(0);
-			WebElement wait = (new WebDriverWait(driver, 10))
+			WebElement shipmentHeaderWait = (new WebDriverWait(driver, 10))
 					  .until(ExpectedConditions.elementToBeClickable(By.xpath("//span[text()='Shipment Header']")));
-			driver.findElementByXPath("//span[text()='Shipment Header']").click();
+			shipmentHeaderWait.click();
 			
-			WebElement wait3 = (new WebDriverWait(driver, 10))
+			WebElement freightRateWait = (new WebDriverWait(driver, 10))
 			  .until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@id='P316_FREIGHT_RATE']")));
 			
-			driver.findElementByXPath("//input[@id='P316_FREIGHT_RATE']").clear();
-			driver.findElementByXPath("//input[@id='P316_FREIGHT_RATE']").sendKeys(e.getRate());
+			freightRateWait.clear();
+			freightRateWait.sendKeys(e.getRate());
 			
 			driver.findElementByLinkText("Apply Changes").click();
 			
@@ -375,10 +374,9 @@ public class ALCWebManager {
 		setEDISearchSettings("", "L", date, date, "5000");
 		search();
 		
-		List<WebElement> wait = (new WebDriverWait(driver, 10))
+		List<WebElement> webElemsWait = (new WebDriverWait(driver, 10))
 				  .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath("//td[@headers='EFJLoad ID']/a")));
 
-		List<WebElement> webelems = driver.findElementsByXPath("//td[@headers='EFJLoad ID']/a");
 		List<WebElement> shipments = driver.findElementsByXPath("//a[@target='_blank']");
 		List<String> shipIDs = new ArrayList<String>();
 
@@ -396,7 +394,7 @@ public class ALCWebManager {
 				continue;
 			}
 			try {
-				e.setLoadNumber(webelems.get(index).getText());
+				e.setLoadNumber(webElemsWait.get(index).getText());
 				log.add("Load number retrieved for shipment " + e.getShipID());
 			} catch (Exception e1) {
 				log.add("[ERROR]: Could not find associated frame with shipment.");
