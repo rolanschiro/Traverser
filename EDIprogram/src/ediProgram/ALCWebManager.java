@@ -31,7 +31,7 @@ public class ALCWebManager {
 	}
 
 //--------------------------------------------------------
-// EDI Methods
+// EDI Methods TEST
 //--------------------------------------------------------
 	public void scrapeTo(String folderPath, int index){
 
