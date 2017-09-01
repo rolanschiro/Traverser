@@ -17,6 +17,8 @@ public class EDI {
 	String RATE = null;
 	String LOAD_MANAGER = null; 
 	String STATUS = null;
+	ArrayList <String> ERROR_LOG = new ArrayList<String>();
+
 	ArrayList <String> table = null; 
 	
 	public EDI(String shipID, String origin, String depot, String equipment){
@@ -138,10 +140,15 @@ public class EDI {
 	}
 	public String getShipID(){
 		return SHIP_ID;
-	}	
+	}
+	public String getErrorLog() {
+		String str = String.join("\n", ERROR_LOG);
+		return str;
+	}
 	public ArrayList <String> getTable(){
 		return table;
 	}
+	
 	
 	//set methods
 	public void setPONumber(String po){
@@ -150,23 +157,18 @@ public class EDI {
 	public void setShipID(String id){
 		SHIP_ID = id;
 	}
-	
 	public void setOffice(String office){
 		OFFICE = office;
 	}
-	
 	public void setRate(String rate){
 		RATE = rate;
 	}
-	
 	public void setLoadManager(String loadmanager){
 		LOAD_MANAGER = loadmanager;
 	}
-
 	public void setTable(ArrayList <String> t){
 		table = t;
 	}
-	
 	public void setOriginZip(String zip){
 		ORIGIN_ZIP = zip;
 	}
@@ -188,6 +190,10 @@ public class EDI {
 	public void setOfficeName(String name){
 		OFFICE_NAME = name;
 	}
+	public void addToErrorLog(String error) {
+		ERROR_LOG.add(error);
+	}
+
 	public String toString(){
 		String str;
 		str = 	"SHIP ID = " + getShipID() +
@@ -200,7 +206,8 @@ public class EDI {
 				"\nOFFICE = " + getOffice() +
 				"\nRATE = " + getRate() +
 				"\nLOAD MANAGER = " + getLoadManager() + 
-				"\nSTATUS = " + getStatus();
+				"\nSTATUS = " + getStatus() +
+				"\nERRORS = " + getErrorLog();
 		
 		return str;
 	}

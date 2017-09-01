@@ -19,8 +19,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class ALCWebManager {
 
 	ChromeDriver driver;
-	ArrayList <String> log = new ArrayList<String>();
-
+	ArrayList <String> tempLog = new ArrayList<String>();
+	ArrayList <String> diagLog = new ArrayList<String>();
+	ArrayList <String> errLog = new ArrayList<String>();
+	
 	public ALCWebManager(ChromeDriver d)
 	{
 		driver = d;
@@ -75,7 +77,7 @@ public class ALCWebManager {
 		try {
 			Files.write(file, str, StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			log.add("[ERROR]: Could not write file to bin.");
+			log("[ERROR]: Could not write file to bin.");
 		}
 		driver.close();
 		driver.switchTo().window(tabs.get(0));
@@ -154,15 +156,16 @@ public class ALCWebManager {
 						WebElement rc = (new WebDriverWait(driver, 3))
 								  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("ReCreate EFJ")));
 						rc.click();
-						log.add("Shipment " + e.getShipID() + " was REVISED and recreated.");
+						log("Shipment " + e.getShipID() + " was REVISED and recreated.");
 					} catch (Exception e1) {
-						log.add("Shipment " + e.getShipID() + " was REVISED. EFJ was already recreated.");
+						log("Shipment " + e.getShipID() + " was REVISED. EFJ was already recreated.");
 					}
 					
 					check = checkZipcodes(e);
 					break;
 				} catch (Exception e1) {
-					log.add("[ERROR]: Could not find associated load number with shipment.");
+					log("[ERROR]: Could not find associated load number with shipment.");
+					e.addToErrorLog(getErrLog());
 					continue;
 				}
 			}
@@ -181,14 +184,15 @@ public class ALCWebManager {
 					e.setLoadNumber(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
 						rc.click();
-						log.add("Shipment " + e.getShipID() + " was CANCELLED. EFJ recreated.");
+						log("Shipment " + e.getShipID() + " was CANCELLED. EFJ recreated.");
 					} catch (Exception e1) {
-						log.add("Shipment " + e.getShipID() + " was CANCELLED. EFJ was already recreated.");
+						log("Shipment " + e.getShipID() + " was CANCELLED. EFJ was already recreated.");
 					}
 					check = true;
 					break;
 				} catch (Exception e1) {
-					log.add("[ERROR]: Could not find associated load number with shipment.");
+					log("[ERROR]: Could not find associated load number with shipment.");
+					e.addToErrorLog(getErrLog());
 					continue;
 				}
 			}
@@ -223,9 +227,9 @@ public class ALCWebManager {
 					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
 						WebElement rc = driver.findElementByLinkText("ReCreate EFJ");
-						log.add("Shipment " + e.getShipID() + " was REVISED.");
+						log("Shipment " + e.getShipID() + " was REVISED.");
 					} catch (Exception e1) {
-						log.add("EFJ was already recreated.");
+						log("EFJ was already recreated.");
 					}
 					
 					check = checkZipcodes(e);
@@ -247,9 +251,9 @@ public class ALCWebManager {
 					e.setLoadNumber(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
 					try {
 						WebElement rc = driver.findElementByLinkText("Update EFJ Manually");
-						log.add("Shipment " + e.getShipID() + " was CANCELLED.");
+						log("Shipment " + e.getShipID() + " was CANCELLED.");
 					} catch (Exception e1) {
-						log.add("EFJ was already recreated.");
+						log("EFJ was already recreated.");
 					}
 					check = true;
 					break;
@@ -280,25 +284,27 @@ public class ALCWebManager {
 		driver.findElementByXPath("//span[text()='Pick Up Info']").click();
 
 		if(!(e.getOriginZip().equals(driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value")))){
-			log.add("[ERROR]: Shipment " + e.getShipID() + " PICK UP zipcodes do not match.");
-			log.add("	+ CORRECT ZIP = " + e.getOriginZip()+ "\n"
-					+ "	- LISTED ZIP = " + driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value"));
+			log("[ERROR]: Shipment " + e.getShipID() + " PICK UP zipcodes do not match." +
+					"\n	+ CORRECT ZIP = " + e.getOriginZip() +
+					"\n	- LISTED ZIP = " + driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value"));
+			e.addToErrorLog(getErrLog());
 			c = false;
 		}
 		else
-			log.add("	~ ORIGIN ZIP CODES MATCH! ~");
+			log("	~ ORIGIN ZIP CODES MATCH! ~");
 		
 		//check destination zip codes PARTIAL MATCH
 
 		driver.findElementByXPath("//span[text()='Delivery Info']").click();
 		if(!(driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value").contains(e.getDestZip()))){
-			log.add("[ERROR]: Shipment " + e.getShipID() + " DESTINATION zipcodes do not match.");
-			log.add("	+ CORRECT ZIP = " + e.getDestZip()+ "\n"
-					+ "	- LISTED ZIP = " + driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value"));
+			log("[ERROR]: Shipment " + e.getShipID() + " DESTINATION zipcodes do not match." +
+					"\n	+ CORRECT ZIP = " + e.getDestZip() + 
+					"\n	- LISTED ZIP = " + driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value"));
+			e.addToErrorLog(getErrLog());
 			c = false;
 		}
 		else
-			log.add("	~ DESTINATION ZIP CODES MATCH! ~");
+			log("	~ DESTINATION ZIP CODES MATCH! ~");
 		return c;
 	}
 	
@@ -317,15 +323,17 @@ public class ALCWebManager {
 			int index = 0;
 			index = shipIDs.indexOf(e.getShipID());
 			if(index == -1){
-				log.add("[ERROR]: Shipment " + e.getShipID() + " could not be found on page.");
+				log("[ERROR]: Shipment " + e.getShipID() + " could not be found on page.");
+				e.addToErrorLog(getErrLog());
 				continue;
 			}
 			try {
 				webElemsWait.get(index).click();
-				log.add("Output path established for EDI " + e.getShipID());
+				log("Output path established for EDI " + e.getShipID());
 
 			} catch (Exception e1) {
-				log.add("[ERROR]: Could not find associated frame with shipment.");
+				log("[ERROR]: Could not find associated frame with shipment.");
+				e.addToErrorLog(getErrLog());
 				continue;
 			}
 			driver.switchTo().frame(0);
@@ -353,17 +361,19 @@ public class ALCWebManager {
 			if(driver.findElementByXPath("//*[@id='APP00" + (index + 1) + "']").isEnabled()){
 				try {
 					driver.findElementByXPath("//*[@id='APP00" + (index + 1) + "']").click();
-					log.add("Shipment APPROVED for EFJ creation.");
+					log("Shipment APPROVED for EFJ creation.");
 				} catch (Exception e1) {
-					log.add("[ERROR]: Unable to approve shipment " + e.getShipID() + ".");
+					log("[ERROR]: Unable to approve shipment " + e.getShipID() + ".");
+					e.addToErrorLog(getErrLog());
 					e1.printStackTrace();
 				}
 			}
-			else
-				log.add("[ERROR]: Unable to approve shipment " + e.getShipID() + ".");
+			else{
+				log("[ERROR]: Unable to approve shipment " + e.getShipID() + ".");
+				e.addToErrorLog(getErrLog());
+			}
 		}
 		driver.findElementByXPath("//input[@id='CREATE_EFJS']").click();
-		
 	}
 	
 	public void findLoadIDs(ArrayList<EDI> edis, String custCode){
@@ -390,14 +400,16 @@ public class ALCWebManager {
 			if(e.getStatus().equals("CANCELLED"))
 				continue;
 			if(index == -1){
-				log.add("[ERROR]: Could not retieve LOAD# for shipment " + e.getShipID() + " (not found on page).");
+				log("[ERROR]: Could not retieve LOAD# for shipment " + e.getShipID() + " (not found on page).");
+				e.addToErrorLog(getErrLog());
 				continue;
 			}
 			try {
 				e.setLoadNumber(webElemsWait.get(index).getText());
-				log.add("Load number retrieved for shipment " + e.getShipID());
+				log("Load number retrieved for shipment " + e.getShipID());
 			} catch (Exception e1) {
-				log.add("[ERROR]: Could not find associated frame with shipment.");
+				log("[ERROR]: Could not find associated frame with shipment.");
+				e.addToErrorLog(getErrLog());
 				continue;
 			}
 
@@ -419,12 +431,30 @@ public class ALCWebManager {
 		passID.submit();
 	}
 
+	public void log(String str){
+		tempLog.add(str);
+		diagLog.add(str);
+		if(str.contains("[ERROR]")){
+			errLog.add(str);
+		}
+	}
 	
-	
-	public String getLog(){
-		String str = String.join("\n", log);
-		log.clear();
+	public String getTempLog(){
+		String str = String.join("\n", tempLog);
+		tempLog.clear();
 		return str;
- }
+	}
+	
+	public String getDiagLog(){
+		String str = String.join("\n", diagLog);
+		return str;
+	}
+	
+	public String getErrLog(){
+		String str = String.join("\n", errLog);
+		errLog.clear();
+		return str;
+	}
+	
 }
 

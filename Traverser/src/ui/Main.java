@@ -52,7 +52,9 @@ public class Main {
 	private Text endDate;
 	private Combo rowsCombo;
 	
-	final static ArrayList <EDI> ediRepository = new ArrayList <EDI>();
+	static ArrayList <EDI> ediRepository = new ArrayList <EDI>();
+	static ArrayList<EDI> incompleteEDIs = new ArrayList<EDI>();
+
 
 	static String PATH;
 	static File MATRIX;
@@ -61,7 +63,6 @@ public class Main {
 	ArrayList<String> cancelledLoads = new ArrayList<String>();
 	ArrayList<String> revisedLoads = new ArrayList<String>();
 	ArrayList<String> originalLoads = new ArrayList<String>();
-	ArrayList<String> incompleteEDIs = new ArrayList<String>();
 	
 	File config = new File("config.properties");
 	File bin;
@@ -183,10 +184,14 @@ public class Main {
 
 		startDate = new Text(inputComposite, SWT.BORDER);
 		startDate.setBounds(61, 0, 70, 21);
-
+		
 		endDate = new Text(inputComposite, SWT.BORDER);
 		endDate.setBounds(61, 27, 70, 21);
-		
+		LocalDateTime dateTime = LocalDateTime.now();
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yy");
+		String date = (dateTime.format(format));
+		endDate.setText(date);
+
 		Button checkJDA = new Button(inputComposite, SWT.CHECK);
 		checkJDA.setSelection(true);
 		checkJDA.setBounds(61, 81, 41, 16);
@@ -344,8 +349,9 @@ public class Main {
 								updateSystemOutput("Successfully converted file "+ f.getName()+ " to EDI object.");
 								f.delete();
 							} catch (Exception e1) {
-								updateSystemOutput("[ERROR]: Could not open file "+ f.getName()+ " - continuing to next file.");
-								incompleteEDIs.add(f.getName());
+								edi.setShipID(f.getName());
+								err("[ERROR]: Could not open file "+ f.getName()+ " - continuing to next file.", edi);
+								incompleteEDIs.add(edi);
 								e1.printStackTrace();
 								continue;
 								}
@@ -354,8 +360,8 @@ public class Main {
 							try {
 								edi.parseAsJDA();
 							} catch (Exception e1) {
-								updateSystemOutput("[ERROR]: Could not parse EDI "+ f.getName()+ "- continuing to next EDI.");
-								incompleteEDIs.add(edi.getShipID());
+								err("[ERROR]: Could not parse EDI "+ f.getName()+ "- continuing to next EDI.", edi);
+								incompleteEDIs.add(edi);
 								e1.printStackTrace();
 								continue;
 							}
@@ -374,33 +380,32 @@ public class Main {
 							updateSystemOutput("Checking shipment " + edi.getShipID() + " for problems...\n");
 							
 							if(ediScraper.checkEDIdata(edi)){
-								updateSystemOutput(ediScraper.getLog());
+								updateSystemOutput(ediScraper.getTempLog());
 								//if it is a cancelled load, skip completing the file entirely, but still add to completed EDI repo.
 								if(edi.getStatus() == "CANCELLED"){
 									ediRepository.add(edi);
-									updateSystemOutput(ediScraper.getLog());
+									updateSystemOutput(ediScraper.getTempLog());
 								}
 								else{	
 									try {
 										completeEDIfile(edi);
 										ediRepository.add(edi);
-										updateSystemOutput(ediScraper.getLog());
+										updateSystemOutput(ediScraper.getTempLog());
 										updateSystemOutput("Gathered rate, office, and manager for shipment " + f.getName() + ".");
 									} catch (Exception e1) {
-										updateSystemOutput("[ERROR]: Cannot complete file " + f.getName() + ".");
-										incompleteEDIs.add(edi.getShipID());
+										err("[ERROR]: Cannot complete file " + f.getName() + ".", edi);
+										incompleteEDIs.add(edi);
 										e1.printStackTrace();
 										continue;
 									}
 								}
 							}
 							else{
-								updateSystemOutput("[ERROR]: EDI " + f.getName() + " was checked and returned false." + ediScraper.getLog() + "\n");
-								incompleteEDIs.add(edi.getShipID());
+								err("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below: \n" + ediScraper.getTempLog() + "\n", edi);
+								incompleteEDIs.add(edi);
 								continue;
 							}
 							addToProgressBar(interval);
-							updateSystemOutput(edi.toString());
 						}
 						updateProgressBar(70);
 						
@@ -408,11 +413,11 @@ public class Main {
 						ediScraper.search();
 					
 						ediScraper.outputToALX(ediRepository);
-						updateSystemOutput(ediScraper.getLog());
+						updateSystemOutput(ediScraper.getTempLog());
 						updateProgressBar(85);
 
 						ediScraper.findLoadIDs(ediRepository, cust);
-						updateSystemOutput(ediScraper.getLog());
+						updateSystemOutput(ediScraper.getTempLog());
 						updateProgressBar(95);
 
 						ArrayList<String> ediResults = new ArrayList<String>();
@@ -420,7 +425,6 @@ public class Main {
 						
 						for(EDI edi : ediRepository){
 							ediResults.add(edi.getPONumber() + "," + edi.getLoadNumber() + "," + edi.getOfficeName() + "," + edi.getStatus() + "," + edi.getShipID());
-							updateSystemOutput(edi.toString() + "\n");
 						}
 						try {
 							Files.write(results, ediResults, StandardCharsets.UTF_8);
@@ -454,8 +458,9 @@ public class Main {
 						ediRepository.clear();
 
 						updateSystemOutput("INCOMPLETE EDIS:");
-						for(String str : incompleteEDIs){
-							updateSystemOutput("	" + (incompleteEDIs.indexOf(str) + 1) + ". "+ str);
+						for(EDI edi : incompleteEDIs){
+							updateSystemOutput("	" + (incompleteEDIs.indexOf(edi) + 1) + ". "+ edi.getShipID());
+							updateSystemOutput("\n		" + edi.toString());
 						}
 						incompleteEDIs.clear();
 
@@ -536,9 +541,9 @@ public class Main {
 						for(int i = 0; true; i++){
 							try{
 								ediScraper.scrapeTo(bin.getAbsolutePath(), i);
-								updateSystemOutput(ediScraper.getLog());
+								updateSystemOutput(ediScraper.getTempLog());
 							} catch(NoSuchElementException e1){
-								updateSystemOutput(ediScraper.getLog());
+								updateSystemOutput(ediScraper.getTempLog());
 								e1.printStackTrace();
 								updateSystemOutput("File Creation Complete!");
 								break;
@@ -558,18 +563,19 @@ public class Main {
 								updateSystemOutput("Successfully converted file "+ f.getName()+ " to EDI object.");
 								f.delete();
 							} catch (Exception e1) {
-								updateSystemOutput("[ERROR]: Could not open file "+ f.getName()+ " - continuing to next file.");
-								incompleteEDIs.add(f.getName());
+								edi.setShipID(f.getName());
+								err("[ERROR]: Could not open file "+ f.getName()+ " - continuing to next file.", edi);
+								incompleteEDIs.add(edi);
 								e1.printStackTrace();
 								continue;
-							}
+								}
 
 							//parsing information from EDI's table variable
 							try {
 								edi.parseAsJDA();
 							} catch (Exception e1) {
-								updateSystemOutput("[ERROR]: Could not parse EDI "+ f.getName()+ "- continuing to next EDI.");
-								incompleteEDIs.add(edi.getShipID());
+								err("[ERROR]: Could not parse EDI "+ f.getName()+ "- continuing to next EDI.", edi);
+								incompleteEDIs.add(edi);
 								e1.printStackTrace();
 								continue;
 							}
@@ -585,28 +591,36 @@ public class Main {
 							}
 							
 							//checks EDI information is valid on ALX, if true, completes the EDI file clientside by retrieving matrix information
-							updateSystemOutput("Checking shipment " + edi.getShipID() + " for problems...");
+							updateSystemOutput("Checking shipment " + edi.getShipID() + " for problems...\n");
 							
 							if(ediScraper.safeCheckEDIdata(edi)){
-								updateSystemOutput(ediScraper.getLog());
-								try {
-									completeEDIfile(edi);
+								updateSystemOutput(ediScraper.getTempLog());
+								//if it is a cancelled load, skip completing the file entirely, but still add to completed EDI repo.
+								if(edi.getStatus() == "CANCELLED"){
 									ediRepository.add(edi);
-								} catch (Exception e1) {
-									updateSystemOutput("[ERROR]: Cannot complete file " + f.getName() + "." + ediScraper.getLog() + edi.toString() + "\n");
-									incompleteEDIs.add(edi.getShipID());
-									e1.printStackTrace();
-									continue;
+									updateSystemOutput(ediScraper.getTempLog());
 								}
-								updateSystemOutput(ediScraper.getLog() + "Gathered rate, office, and manager for shipment " + f.getName() + ".");
+								else{	
+									try {
+										completeEDIfile(edi);
+										ediRepository.add(edi);
+										updateSystemOutput(ediScraper.getTempLog());
+										updateSystemOutput("Gathered rate, office, and manager for shipment " + f.getName() + ".");
+									} catch (Exception e1) {
+										err("[ERROR]: Cannot complete file " + f.getName() + ".", edi);
+										incompleteEDIs.add(edi);
+										e1.printStackTrace();
+										continue;
+									}
+								}
 							}
 							else{
-								updateSystemOutput("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below:" + ediScraper.getLog() + "\n");
-								incompleteEDIs.add(edi.getShipID());
+								err("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below: \n" + ediScraper.getTempLog() + "\n", edi);
+								incompleteEDIs.add(edi);
 								continue;
 							}
 							addToProgressBar(interval);
-							updateSystemOutput(ediScraper.getLog() + edi.toString() + "\n");
+							updateSystemOutput(ediScraper.getTempLog() + edi.toString() + "\n");
 						}
 						
 						updateSystemOutput("COMPLETE!");
@@ -629,7 +643,7 @@ public class Main {
 		stopButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateSystemOutput(ediScraper.getLog());
+				updateSystemOutput(ediScraper.getTempLog());
 				ArrayList <String> log = new ArrayList<String>();
 				for(String str : systemOutput.getText().split("\n")){
 					log.add(str);
@@ -805,6 +819,11 @@ public class Main {
 			}
 		});
 
+	}
+	
+	private void err(String errorMessage, EDI e){
+		updateSystemOutput(errorMessage);
+		e.addToErrorLog(errorMessage);
 	}
 
 }
