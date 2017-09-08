@@ -13,6 +13,7 @@ import java.util.List;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 
@@ -351,14 +352,20 @@ public class ALCWebManager {
 			
 			driver.switchTo().window(driver.getWindowHandle());
 			
-			if(index >= 9)
-				driver.findElementByXPath("//select[@id='f02_00" + (index + 1) + "']").sendKeys(e.getOffice());
-			else
-				driver.findElementByXPath("//select[@id='f02_000" + (index + 1) + "']").sendKeys(e.getOffice());
+			if(index >= 9){
+				WebElement office = driver.findElementByXPath("//select[@id='f02_00" + (index + 1) + "']");
+				checkSelectionOutput(office, e, e.getOffice(), 3);
+			}
+			else{
+				WebElement office = driver.findElementByXPath("//select[@id='f02_000" + (index + 1) + "']");
+				checkSelectionOutput(office, e, e.getOffice(), 3);
+			}
 
-			driver.findElementByXPath("//select[@id='f35_0000" + (index + 1) + "']" ).sendKeys(e.getLoadManager());
-
+			WebElement loadManager = driver.findElementByXPath("//select[@id='f35_0000" + (index + 1) + "']" );;
+			checkSelectionOutput(loadManager, e, e.getLoadManager(), 3);
+			
 			if(driver.findElementByXPath("//*[@id='APP00" + (index + 1) + "']").isEnabled()){
+				
 				try {
 					driver.findElementByXPath("//*[@id='APP00" + (index + 1) + "']").click();
 					log("Shipment APPROVED for EFJ creation.");
@@ -374,6 +381,31 @@ public class ALCWebManager {
 			}
 		}
 		driver.findElementByXPath("//input[@id='CREATE_EFJS']").click();
+	}
+	
+	//checks output is correct to ALX
+	public void checkSelectionOutput(WebElement outputElem, EDI e, String correctVal, int attempts){
+		Select selection = new Select(outputElem);
+		for (int i = 1; true; i++){
+			outputElem.sendKeys(correctVal);
+			if(selection.getFirstSelectedOption().getText().equalsIgnoreCase(correctVal)){
+				break;
+			}
+			log("Value:	[" + correctVal + "]	(ATTEMPT #" + i + ")." +
+				"\n		OUTPUT: " + selection.getFirstSelectedOption().getText().toUpperCase() + 
+				"\n		CORRECT: " + correctVal);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			if(i == attempts){
+				log("[ERROR]: Could not set correct value (3 attempts) for shipment " + e.getShipID() + ".");
+				e.addToErrorLog(getErrLog());
+				break;
+			}
+		}
 	}
 	
 	public void findLoadIDs(ArrayList<EDI> edis, String custCode){

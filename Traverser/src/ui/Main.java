@@ -460,7 +460,7 @@ public class Main {
 						updateSystemOutput("INCOMPLETE EDIS:");
 						for(EDI edi : incompleteEDIs){
 							updateSystemOutput("	" + (incompleteEDIs.indexOf(edi) + 1) + ". "+ edi.getShipID());
-							updateSystemOutput("\n		" + edi.toString());
+							updateSystemOutput(edi.toString());
 						}
 						incompleteEDIs.clear();
 
