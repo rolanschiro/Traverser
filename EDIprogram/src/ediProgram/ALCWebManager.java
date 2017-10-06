@@ -147,6 +147,30 @@ public class ALCWebManager {
 		
 		//if revised, finds revised load #, checks zipcodes
 		if(e.getStatus().equals("REVISED")){
+			boolean revisionComplete = false;
+			for(WebElement w : webelems){
+				driver.switchTo().window(driver.getWindowHandle());
+				w.click();
+				driver.switchTo().frame(0);
+				try {
+					WebElement rc = (new WebDriverWait(driver, 3))
+							  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("ReCreate EFJ")));
+					rc.click();
+					log("Shipment " + e.getShipID() + " was REVISED.");
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					continue;
+				}
+				try {
+					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
+				} catch (Exception e1) {
+					log("[ERROR]: No Updated EFJ Number found.");
+					e1.printStackTrace();
+				}
+				check = checkZipcodes(e);
+				revisionComplete = false;
+				break;
+			}
 			for(WebElement w : webelems){
 				driver.switchTo().window(driver.getWindowHandle());
 				w.click();
@@ -161,7 +185,6 @@ public class ALCWebManager {
 					} catch (Exception e1) {
 						log("Shipment " + e.getShipID() + " was REVISED. EFJ was already recreated.");
 					}
-					
 					check = checkZipcodes(e);
 					break;
 				} catch (Exception e1) {
@@ -220,25 +243,48 @@ public class ALCWebManager {
 		
 		//if revised, finds revised load #, checks zipcodes
 		if(e.getStatus().equals("REVISED")){
+			boolean revisionComplete = false;
 			for(WebElement w : webelems){
 				driver.switchTo().window(driver.getWindowHandle());
 				w.click();
 				driver.switchTo().frame(0);
 				try {
-					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
-					try {
-						WebElement rc = driver.findElementByLinkText("ReCreate EFJ");
-						log("Shipment " + e.getShipID() + " was REVISED.");
-					} catch (Exception e1) {
-						log("EFJ was already recreated.");
-					}
-					
-					check = checkZipcodes(e);
-					break;
+					WebElement rc = driver.findElementByLinkText("ReCreate EFJ");
+					log("Shipment " + e.getShipID() + " was REVISED.");
 				} catch (Exception e1) {
+					e1.printStackTrace();
 					continue;
 				}
+				try {
+					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
+				} catch (Exception e1) {
+					log("[ERROR]: No Updated EFJ Number found.");
+					e1.printStackTrace();
+				}
+				check = checkZipcodes(e);
+				revisionComplete = false;
+				break;
 			}
+
+			if(revisionComplete == true)
+				for(WebElement w : webelems){
+					driver.switchTo().window(driver.getWindowHandle());
+					w.click();
+					driver.switchTo().frame(0);
+					try {
+						e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
+						try {
+							WebElement rc = driver.findElementByLinkText("ReCreate EFJ");
+							log("Shipment " + e.getShipID() + " was REVISED.");
+						} catch (Exception e1) {
+							log("EFJ was already recreated.");
+						}		
+						check = checkZipcodes(e);
+						break;
+					} catch (Exception e1) {
+						continue;
+					}
+				}
 		}
 		
 		//if cancelled, find cancelled load #
