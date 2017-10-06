@@ -147,51 +147,45 @@ public class ALCWebManager {
 		
 		//if revised, finds revised load #, checks zipcodes
 		if(e.getStatus().equals("REVISED")){
-			boolean revisionComplete = false;
 			for(WebElement w : webelems){
 				driver.switchTo().window(driver.getWindowHandle());
 				w.click();
 				driver.switchTo().frame(0);
+				
 				try {
-					WebElement rc = (new WebDriverWait(driver, 3))
+					WebElement rc = (new WebDriverWait(driver, 2))
 							  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("ReCreate EFJ")));
 					rc.click();
-					log("Shipment " + e.getShipID() + " was REVISED.");
+					log("EFJ recreated for shipment " + e.getShipID() + ".");		
 				} catch (Exception e1) {
 					e1.printStackTrace();
 					continue;
 				}
-				try {
-					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
-				} catch (Exception e1) {
-					log("[ERROR]: No Updated EFJ Number found.");
-					e1.printStackTrace();
-				}
-				check = checkZipcodes(e);
-				revisionComplete = false;
 				break;
 			}
+			
 			for(WebElement w : webelems){
 				driver.switchTo().window(driver.getWindowHandle());
+				
 				w.click();
-				driver.switchTo().frame(0);
+				
+				try {
+					driver.switchTo().frame(0);
+				} catch (Exception e2) {
+					w.click();
+					driver.switchTo().frame(0);
+				}
+				
 				try {
 					e.setStatus(driver.findElementByXPath("//input[@id='P316_EFJ_ERROR']").getAttribute("value").split(" ")[5]);
-					try {
-						WebElement rc = (new WebDriverWait(driver, 3))
-								  .until(ExpectedConditions.visibilityOfElementLocated(By.linkText("ReCreate EFJ")));
-						rc.click();
-						log("Shipment " + e.getShipID() + " was REVISED and recreated.");
-					} catch (Exception e1) {
-						log("Shipment " + e.getShipID() + " was REVISED. EFJ was already recreated.");
-					}
-					check = checkZipcodes(e);
-					break;
+					log("Shipment " + e.getShipID() + " was REVISED. EFJ was already recreated.");
 				} catch (Exception e1) {
-					log("[ERROR]: Could not find associated load number with shipment.");
+					log("[ERROR]: No Updated EFJ Number found for Revised Load.");
 					e.addToErrorLog(getErrLog());
 					continue;
 				}
+				check = checkZipcodes(e);
+				break;
 			}
 		}
 		
