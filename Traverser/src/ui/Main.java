@@ -35,13 +35,15 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-import ediProgram.ALCWebManager;
-import ediProgram.EDI;
+import ediProgram.*;
+
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 
 public class Main {
 
@@ -65,8 +67,8 @@ public class Main {
 	ArrayList<String> originalLoads = new ArrayList<String>();
 	
 	File config = new File("config.properties");
-	File bin;
-	File logs;
+	File auto_edi, bin, logs; 
+	File costco, alx_input, costco_input;
 
 	/**
 	 * Launch the application.
@@ -129,19 +131,33 @@ public class Main {
 				e3.printStackTrace();
 			}
 		}
+		
+		//path variables
 		PATH = prop.getProperty("path");
 		
-		bin = new File(PATH + "/bin");
+		auto_edi = new File(PATH + "/autoEdi");
+		auto_edi.mkdir();
+		
+		bin = new File(PATH + "/autoEdi/bin");
 		bin.mkdir();
 
-		logs = new File(PATH + "/logs");
+		logs = new File(PATH + "/autoEdi/logs");
 		logs.mkdir();
+
+		costco = new File(PATH + "/costco");
+		costco.mkdir();
+
+		costco_input = new File(PATH + "/costco/costcoInput");
+		costco_input.mkdir();
 		
+		alx_input = new File(PATH + "/costco/alxInput");
+		alx_input.mkdir();
+
 		System.setProperty("webdriver.chrome.driver", PATH + "/chromedriver.exe/");
 		ChromeDriver driver = new ChromeDriver();
 		driver.manage().window().setPosition(new Point(0, -2000));
 
-		ALCWebManager ediScraper = new ALCWebManager(driver);
+		ALCWebManager webManager = new ALCWebManager(driver);
 
 		
 		shlTraverser = new Shell();
@@ -150,7 +166,7 @@ public class Main {
 				driver.quit();
 			}
 		});
-		shlTraverser.setSize(256, 453);
+		shlTraverser.setSize(343, 489);
 		shlTraverser.setText("Traverser");
 		shlTraverser.setLayout(null);
 		
@@ -164,67 +180,10 @@ public class Main {
 		systemOutput.setBlockSelection(true);
 		systemOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		systemOutput.setEditable(false);
-		systemOutput.setBounds(10, 228, 218, 161);
-		
-		
-		Composite inputComposite = new Composite(shlTraverser, SWT.NONE);
-		inputComposite.setBounds(26, 37, 202, 97);
-		
-		Label lblStartDate = new Label(inputComposite, SWT.NONE);
-		lblStartDate.setBounds(0, 3, 55, 15);
-		lblStartDate.setText("Start Date:");
-		
-		Label lblEndDate = new Label(inputComposite, SWT.NONE);
-		lblEndDate.setBounds(0, 30, 55, 15);
-		lblEndDate.setText("End Date:");
-		
-		Label lblShipper = new Label(inputComposite, SWT.NONE);
-		lblShipper.setBounds(0, 82, 55, 15);
-		lblShipper.setText("Shipper:");
-
-		startDate = new Text(inputComposite, SWT.BORDER);
-		startDate.setBounds(61, 0, 70, 21);
-		
-		endDate = new Text(inputComposite, SWT.BORDER);
-		endDate.setBounds(61, 27, 70, 21);
+		systemOutput.setBounds(10, 260, 307, 161);
 		LocalDateTime dateTime = LocalDateTime.now();
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("MM/dd/yy");
 		String date = (dateTime.format(format));
-		endDate.setText(date);
-
-		Button checkJDA = new Button(inputComposite, SWT.CHECK);
-		checkJDA.setSelection(true);
-		checkJDA.setBounds(61, 81, 41, 16);
-		checkJDA.setText("JDA");
-		
-		Button checkJDM = new Button(inputComposite, SWT.CHECK);
-		checkJDM.setSelection(true);
-		checkJDM.setBounds(108, 81, 44, 16);
-		checkJDM.setText("JDM");
-		
-		Button checkCOS = new Button(inputComposite, SWT.CHECK);
-		checkCOS.setSelection(true);
-		checkCOS.setBounds(158, 81, 44, 16);
-		checkCOS.setText("COS");
-		
-		Label lblRows = new Label(inputComposite, SWT.NONE);
-		lblRows.setBounds(0, 56, 41, 15);
-		lblRows.setText("Rows:");
-		
-		Label lblMmddyy = new Label(inputComposite, SWT.NONE);
-		lblMmddyy.setLocation(137, 3);
-		lblMmddyy.setSize(60, 15);
-		lblMmddyy.setText("MM/dd/YY");
-		
-		Label label = new Label(inputComposite, SWT.NONE);
-		label.setLocation(137, 30);
-		label.setSize(60, 15);
-		label.setText("MM/dd/YY");
-		
-		rowsCombo = new Combo(inputComposite, SWT.READ_ONLY);
-		rowsCombo.setItems(new String[] {"5", "10", "15", "20", "30", "50", "100"});
-		rowsCombo.setBounds(61, 52, 70, 23);
-		rowsCombo.select(6);
 	
 		Menu menu = new Menu(shlTraverser, SWT.BAR);
 		shlTraverser.setMenuBar(menu);
@@ -261,8 +220,82 @@ public class Main {
 		});
 		mntmSetPathVariables.setText("Settings...");
 		
-		Composite buttonComposite = new Composite(shlTraverser, SWT.NONE);
-		buttonComposite.setBounds(10, 142, 218, 57);
+		progressBar = new ProgressBar(shlTraverser, SWT.NONE);
+		progressBar.setBounds(10, 237, 307, 17);
+		
+		CTabFolder tabFolder = new CTabFolder(shlTraverser, SWT.BORDER);
+		tabFolder.setBounds(10, 0, 307, 231);
+		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		
+		CTabItem tabEDI = new CTabItem(tabFolder, SWT.NONE);
+		tabEDI.setText("Auto EDI");
+		
+		
+		Composite inputComposite = new Composite(tabFolder, SWT.NONE);
+		tabEDI.setControl(inputComposite);
+		
+		Label lblStartDate = new Label(inputComposite, SWT.NONE);
+		lblStartDate.setBounds(57, 40, 55, 15);
+		lblStartDate.setText("Start Date:");
+		
+		Label lblEndDate = new Label(inputComposite, SWT.NONE);
+		lblEndDate.setBounds(57, 67, 55, 15);
+		lblEndDate.setText("End Date:");
+		
+		Label lblShipper = new Label(inputComposite, SWT.NONE);
+		lblShipper.setBounds(57, 119, 55, 15);
+		lblShipper.setText("Shipper:");
+		
+		startDate = new Text(inputComposite, SWT.BORDER);
+		startDate.setBounds(118, 37, 70, 21);
+		
+		endDate = new Text(inputComposite, SWT.BORDER);
+		endDate.setBounds(118, 64, 70, 21);
+		endDate.setText(date);
+				
+		Button checkJDA = new Button(inputComposite, SWT.CHECK);
+		checkJDA.setSelection(true);
+		checkJDA.setBounds(118, 118, 41, 16);
+		checkJDA.setText("JDA");
+		
+		Button checkJDM = new Button(inputComposite, SWT.CHECK);
+		checkJDM.setSelection(true);
+		checkJDM.setBounds(165, 118, 44, 16);
+		checkJDM.setText("JDM");
+		
+		Button checkCOS = new Button(inputComposite, SWT.CHECK);
+		checkCOS.setSelection(true);
+		checkCOS.setBounds(215, 118, 44, 16);
+		checkCOS.setText("COS");
+		
+		Label lblRows = new Label(inputComposite, SWT.NONE);
+		lblRows.setBounds(57, 93, 41, 15);
+		lblRows.setText("Rows:");
+		
+		Label lblMmddyy = new Label(inputComposite, SWT.NONE);
+		lblMmddyy.setLocation(194, 40);
+		lblMmddyy.setSize(60, 15);
+		lblMmddyy.setText("MM/dd/YY");
+		
+		Label label = new Label(inputComposite, SWT.NONE);
+		label.setLocation(194, 67);
+		label.setSize(60, 15);
+		label.setText("MM/dd/YY");
+		
+		rowsCombo = new Combo(inputComposite, SWT.READ_ONLY);
+		rowsCombo.setItems(new String[] {"5", "10", "15", "20", "30", "50", "100"});
+		rowsCombo.setBounds(118, 89, 70, 23);
+		rowsCombo.select(6);
+		
+		Label lblEdi = new Label(inputComposite, SWT.NONE);
+		lblEdi.setLocation(116, 10);
+		lblEdi.setSize(68, 21);
+		lblEdi.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 12, SWT.BOLD));
+		lblEdi.setText("Auto EDI");
+		
+		Composite buttonComposite = new Composite(inputComposite, SWT.NONE);
+		buttonComposite.setLocation(42, 140);
+		buttonComposite.setSize(218, 57);
 		
 		//full EFJ creation button, includes ALX output
 		Button createEFJsButton = new Button(buttonComposite, SWT.NONE);
@@ -298,11 +331,11 @@ public class Main {
 				String cust = c.toString();
 				
 				boolean check = true;
-				if(prop.getProperty("username") == null){
+				if(prop.getProperty("alxUsername") == null){
 					updateSystemOutput("[ERROR]: No username!");
 					check = false;
 				}
-				if(prop.getProperty("password") == null){
+				if(prop.getProperty("alxPassword") == null){
 					updateSystemOutput("[ERROR]: No password!");
 					check = false;
 				}
@@ -321,14 +354,14 @@ public class Main {
 				Thread s = new Thread(){
 					public void run(){
 						updateProgressBar(0);
-						ediScraper.EDIlogIn(prop.getProperty("username"), prop.getProperty("password"));
+						webManager.EDIlogIn(prop.getProperty("username"), prop.getProperty("password"));
 						updateProgressBar(5);
-						ediScraper.setEDISearchSettings(cust, "N", start, end, rows);
-						ediScraper.search();
+						webManager.setEDISearchSettings(cust, "N", start, end, rows);
+						webManager.search();
 						
 						for(int i = 0; true; i++){
 							try{
-								ediScraper.scrapeTo(bin.getAbsolutePath(), i);
+								webManager.scrapeTo(bin.getAbsolutePath(), i);
 							} catch(NoSuchElementException e1){
 								updateSystemOutput("File Creation Complete!");
 								break;
@@ -379,18 +412,18 @@ public class Main {
 							//checks EDI information is valid on ALX, if true, completes the EDI file clientside by retrieving matrix information
 							updateSystemOutput("Checking shipment " + edi.getShipID() + " for problems...\n");
 							
-							if(ediScraper.checkEDIdata(edi)){
-								updateSystemOutput(ediScraper.getTempLog());
+							if(webManager.checkEDIdata(edi)){
+								updateSystemOutput(webManager.getTempLog());
 								//if it is a cancelled load, skip completing the file entirely, but still add to completed EDI repo.
 								if(edi.getStatus() == "CANCELLED"){
 									ediRepository.add(edi);
-									updateSystemOutput(ediScraper.getTempLog());
+									updateSystemOutput(webManager.getTempLog());
 								}
 								else{	
 									try {
 										completeEDIfile(edi);
 										ediRepository.add(edi);
-										updateSystemOutput(ediScraper.getTempLog());
+										updateSystemOutput(webManager.getTempLog());
 										updateSystemOutput("Gathered rate, office, and manager for shipment " + f.getName() + ".");
 									} catch (Exception e1) {
 										err("[ERROR]: Cannot complete file " + f.getName() + ".", edi);
@@ -401,7 +434,7 @@ public class Main {
 								}
 							}
 							else{
-								err("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below: \n" + ediScraper.getTempLog() + "\n", edi);
+								err("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below: \n" + webManager.getTempLog() + "\n", edi);
 								incompleteEDIs.add(edi);
 								continue;
 							}
@@ -409,15 +442,15 @@ public class Main {
 						}
 						updateProgressBar(70);
 						
-						ediScraper.setEDISearchSettings("", "N", start, end, rows);
-						ediScraper.search();
+						webManager.setEDISearchSettings("", "N", start, end, rows);
+						webManager.search();
 					
-						ediScraper.outputToALX(ediRepository);
-						updateSystemOutput(ediScraper.getTempLog());
+						webManager.outputToALX(ediRepository);
+						updateSystemOutput(webManager.getTempLog());
 						updateProgressBar(85);
 
-						ediScraper.findLoadIDs(ediRepository, cust);
-						updateSystemOutput(ediScraper.getTempLog());
+						webManager.findLoadIDs(ediRepository, cust);
+						updateSystemOutput(webManager.getTempLog());
 						updateProgressBar(95);
 
 						ArrayList<String> ediResults = new ArrayList<String>();
@@ -515,11 +548,11 @@ public class Main {
 				String cust = c.toString();
 				
 				boolean check = true;
-				if(prop.getProperty("username")== null){
+				if(prop.getProperty("alxUsername")== null){
 					updateSystemOutput("[ERROR]: No username!");
 					check = false;
 				}
-				if(prop.getProperty("password") == null){
+				if(prop.getProperty("alxPassword") == null){
 					updateSystemOutput("[ERROR]: No password!");
 					check = false;
 				}
@@ -532,18 +565,18 @@ public class Main {
 					public void run(){
 						
 						updateProgressBar(0);
-						ediScraper.EDIlogIn(prop.getProperty("username"), prop.getProperty("password"));
+						webManager.EDIlogIn(prop.getProperty("username"), prop.getProperty("password"));
 						updateProgressBar(5);
-						ediScraper.setEDISearchSettings(cust , "N", start, end, rows);
-						ediScraper.search();
+						webManager.setEDISearchSettings(cust , "N", start, end, rows);
+						webManager.search();
 						updateProgressBar(15);
 						
 						for(int i = 0; true; i++){
 							try{
-								ediScraper.scrapeTo(bin.getAbsolutePath(), i);
-								updateSystemOutput(ediScraper.getTempLog());
+								webManager.scrapeTo(bin.getAbsolutePath(), i);
+								updateSystemOutput(webManager.getTempLog());
 							} catch(NoSuchElementException e1){
-								updateSystemOutput(ediScraper.getTempLog());
+								updateSystemOutput(webManager.getTempLog());
 								e1.printStackTrace();
 								updateSystemOutput("File Creation Complete!");
 								break;
@@ -593,18 +626,18 @@ public class Main {
 							//checks EDI information is valid on ALX, if true, completes the EDI file clientside by retrieving matrix information
 							updateSystemOutput("Checking shipment " + edi.getShipID() + " for problems...\n");
 							
-							if(ediScraper.safeCheckEDIdata(edi)){
-								updateSystemOutput(ediScraper.getTempLog());
+							if(webManager.safeCheckEDIdata(edi)){
+								updateSystemOutput(webManager.getTempLog());
 								//if it is a cancelled load, skip completing the file entirely, but still add to completed EDI repo.
 								if(edi.getStatus() == "CANCELLED"){
 									ediRepository.add(edi);
-									updateSystemOutput(ediScraper.getTempLog());
+									updateSystemOutput(webManager.getTempLog());
 								}
 								else{	
 									try {
 										completeEDIfile(edi);
 										ediRepository.add(edi);
-										updateSystemOutput(ediScraper.getTempLog());
+										updateSystemOutput(webManager.getTempLog());
 										updateSystemOutput("Gathered rate, office, and manager for shipment " + f.getName() + ".");
 									} catch (Exception e1) {
 										err("[ERROR]: Cannot complete file " + f.getName() + ".", edi);
@@ -615,12 +648,12 @@ public class Main {
 								}
 							}
 							else{
-								err("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below: \n" + ediScraper.getTempLog() + "\n", edi);
+								err("[ERROR]: EDI " + f.getName() + " was checked and returned false. See below: \n" + webManager.getTempLog() + "\n", edi);
 								incompleteEDIs.add(edi);
 								continue;
 							}
 							addToProgressBar(interval);
-							updateSystemOutput(ediScraper.getTempLog() + edi.toString() + "\n");
+							updateSystemOutput(webManager.getTempLog() + edi.toString() + "\n");
 						}
 						
 						updateSystemOutput("COMPLETE!");
@@ -643,7 +676,7 @@ public class Main {
 		stopButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateSystemOutput(ediScraper.getTempLog());
+				updateSystemOutput(webManager.getTempLog());
 				ArrayList <String> log = new ArrayList<String>();
 				for(String str : systemOutput.getText().split("\n")){
 					log.add(str);
@@ -668,15 +701,135 @@ public class Main {
 		Label label_1 = new Label(buttonComposite, SWT.SEPARATOR | SWT.VERTICAL);
 		label_1.setBounds(169, -4, 2, 64);
 		
-		progressBar = new ProgressBar(shlTraverser, SWT.NONE);
-		progressBar.setBounds(10, 205, 218, 17);
+		CTabItem tabCostco = new CTabItem(tabFolder, SWT.NONE);
+		tabCostco.setText("Costco");
 		
-		Label lblEdi = new Label(shlTraverser, SWT.NONE);
-		lblEdi.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 12, SWT.BOLD));
-		lblEdi.setBounds(85, 10, 68, 21);
-		lblEdi.setText("Auto EDI");
+		Composite composite = new Composite(tabFolder, SWT.NONE);
+		tabCostco.setControl(composite);
+		
+		Label lblCostco = new Label(composite, SWT.NONE);
+		lblCostco.setAlignment(SWT.CENTER);
+		lblCostco.setText("Costco");
+		lblCostco.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 12, SWT.BOLD));
+		lblCostco.setBounds(113, 10, 68, 21);
+		
+		Button btnTest = new Button(composite, SWT.NONE);
+		btnTest.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+				InputStream input = null;
+				try {
+					input = new FileInputStream("config.properties");
+					prop.load(input);
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+
+				Thread test = new Thread(){
+						public void run(){
+//							webManager.shippersLogIn(prop.getProperty("alxUsername"), prop.getProperty("alxPassword"));
+//							ArrayList<String> data = webManager.aggregateData(costco.getAbsolutePath());
+							
+							ArrayList<Payment> PAYMENTS = parsePayments();
+							updateProgressBar(10);
+							ArrayList<Invoice> INVOICES = parseInvoices();
+							ArrayList<String> results = new ArrayList<String>();
+							results.add("Office,File #,Load ID,Billed Amount,ADJ,Paid Amount,Balance Due,Days Old,Shipper #,Status");
+							updateProgressBar(20);
+							updateSystemOutput("" + PAYMENTS.size());
+							updateSystemOutput("" + INVOICES.size());
+								
+							for(Invoice invoice:INVOICES){
+								String invLoadNum = invoice.getLOAD_ID();
+								double paymentSum = 0;
+								for(Payment payment : PAYMENTS){
+
+									if(invLoadNum.equals(payment.getLOAD_ID())){
+										paymentSum += payment.getPAID_AMOUNT();
+										
+										double paidAmount = Math.round(invoice.getPAID_AMOUNT() + paymentSum);
+										invoice.setPAID_AMOUNT(paidAmount);
+										double balanceDue = Math.round(invoice.getBALANCE_DUE() - paymentSum);
+										invoice.setBALANCE_DUE(balanceDue);
+										
+										invoice.setSTATUS("PENDING");
+									}
+								}
+								if(invoice.getBALANCE_DUE() > 0){
+									if(invoice.getPAID_AMOUNT() > 0)									
+										invoice.setSTATUS("SHORT-PAID");
+									results.add(invoice.toString());
+								}
+								
+								if(INVOICES.indexOf(invoice) == INVOICES.size()/25){
+									addToProgressBar(3);
+								}
+							}
+							
+							Path costco_results = Paths.get(costco.getAbsolutePath(), "results.csv");
+
+							try {
+								Files.write(costco_results, results, StandardCharsets.UTF_8);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							
+							updateSystemOutput("Complete!");
+							updateProgressBar(100);
+						}
+				};
+				
+				boolean check = true;
+				if(prop.getProperty("alxUsername") == null){
+					updateSystemOutput("[ERROR]: No username!");
+					check = false;
+				}
+				if(prop.getProperty("alxPassword") == null){
+					updateSystemOutput("[ERROR]: No password!");
+					check = false;
+				}
+				if(prop.getProperty("path") == null){
+					updateSystemOutput("[ERROR]: No path specified!");
+					check = false;
+				}
+				if(check != false)
+					test.start();
+			}
+		});
+		btnTest.setBounds(64, 75, 75, 66);
+		btnTest.setText("Run");
+		
+		Button btnCreateAlxReport = new Button(composite, SWT.NONE);
+		btnCreateAlxReport.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				InputStream input = null;
+				try {
+					input = new FileInputStream("config.properties");
+					prop.load(input);
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+
+				Thread t = new Thread(){
+						public void run(){
+							webManager.shippersLogIn(prop.getProperty("alxUsername"), prop.getProperty("alxPassword"));
+							ArrayList<String> data = webManager.aggregateData(alx_input.getAbsolutePath());
+						}
+				};
+				
+				t.start();
+			}
+		});
+		btnCreateAlxReport.setBounds(145, 75, 108, 25);
+		btnCreateAlxReport.setText("Create ALX Report");
 	}
 	
+//---------------
+//EDI Methods
+//---------------
 	public static EDI convertFileToEDI(File edi) throws IOException{
 		ArrayList<String> table = new ArrayList<String>();
 		List <String> rows = Files.readAllLines(Paths.get(edi.getPath()));
@@ -745,7 +898,53 @@ public class Main {
 		}
 
 	}
+//---------------
+//Costco Methods
+//---------------
 	
+	private ArrayList<Payment> parsePayments(){
+		ArrayList <Payment> payments = new ArrayList<Payment>();
+		for(File file: costco_input.listFiles()){
+			List<String> rows = null;
+			try {
+				rows = Files.readAllLines(file.toPath());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			for(String line : rows){
+				Payment p = new Payment(line);
+				payments.add(p);
+			}
+		}
+
+		
+		return payments;
+	}
+
+	private ArrayList<Invoice> parseInvoices(){
+		ArrayList <Invoice> invoices = new ArrayList<Invoice>();
+		for(File file: alx_input.listFiles()){
+			List<String> rows = null;
+			try {
+				rows = Files.readAllLines(file.toPath());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			for(String line : rows){
+				Invoice i = new Invoice(line);
+				invoices.add(i);
+			}
+		}
+
+		return invoices;
+	}
+
+	
+//---------------
+//UI Methods
+//---------------
 	private static void updateSystemOutput(String line){
 		systemOutput.getDisplay().syncExec(new Runnable() {
 		      @Override
@@ -825,5 +1024,4 @@ public class Main {
 		updateSystemOutput(errorMessage);
 		e.addToErrorLog(errorMessage);
 	}
-
 }

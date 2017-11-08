@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.openqa.selenium.*;
@@ -435,7 +437,7 @@ public class ALCWebManager {
 				"\n		OUTPUT: " + selection.getFirstSelectedOption().getText().toUpperCase() + 
 				"\n		CORRECT: " + correctVal);
 			try {
-				Thread.sleep(100);
+				Thread.sleep(500);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -489,10 +491,23 @@ public class ALCWebManager {
 	}
 
 //--------------------------------------------------------
-// Accounting Methods
+// Costco Methods
 //--------------------------------------------------------
-	public void accountingLogIn(String user, String pass){
-		driver.get("http://alx-prod.allenlund.com:7777/pls/apex/f?p=45290:281:4120368540374876::NO:RP:P0_AVAIL_LOAD,P0_EDI_LOAD,P0_ACTIVE_LOAD,P0_WATCH_LOAD,P0_REV_LOAD:%2CEDI%2C%2C%2C");
+	public void costcoLogIn(String user, String pass){
+		driver.get("https://hub.costco.com/vendorportal/index");
+		
+		WebElement userID = driver.findElement(By.id("ctl00_body_UsernameTextBox"));
+		WebElement passID = driver.findElement(By.id("ctl00_body_PasswordTextBox"));
+		
+		userID.sendKeys(user);
+		passID.sendKeys(pass);
+		
+		WebElement signIn = driver.findElement(By.xpath("//input[@value='Sign In']"));
+		signIn.click();
+	}
+	
+	public void shippersLogIn(String user, String pass){
+		driver.get("http://alx-prod.allenlund.com:7777/pls/apex/f?p=45290:1:2608836089525::NO:RP::");
 		
 		WebElement userID = driver.findElement(By.id("P101_USERNAME"));
 		WebElement passID = driver.findElement(By.id("P101_PASSWORD"));
@@ -501,6 +516,66 @@ public class ALCWebManager {
 		passID.sendKeys(pass);
 		
 		passID.submit();
+		
+		driver.findElement(By.cssSelector("img[src*='/i/themes/theme_20_TMS/ship_search4.png']")).click();
+		
+	}
+
+	public ArrayList<String> aggregateData(String folderPath){
+		ArrayList <String> table = new ArrayList<String>();
+		table.add("File #,Load ID,Billed Amount,ADJ,Paid Amount,Balance Due,Days Old,Shipper #");
+		//shipper list on ALX, index starts at 1, skipping header
+		for(int index = 2; true; index++){
+			List <WebElement> webElems = driver.findElementsByXPath("//table[@id='2629412708429535']/tbody/tr/td[1]");
+			//gathering shipper number
+			String shipperNumber = new String();
+			try {
+				shipperNumber = driver.findElementByXPath("//table[@id='2629412708429535']/tbody/tr[" + index + "]/td[@headers='CUSTOMER_NUM']").getText();
+				webElems.get(index).click();
+			} catch (Exception e) {
+				e.printStackTrace();
+				break;
+			}
+			driver.findElementByPartialLinkText("Payments").click();
+
+			//gather table from ALX
+			StringBuilder rawData = new StringBuilder();
+			try {			
+				ArrayList<String> str = new ArrayList<String>(Arrays.asList(driver.findElementByClassName("a-IRR-table").getText().split("\n")));
+
+				for(int i = 10; i >= 0; i--){
+					str.remove(i);
+				}
+				
+				for(String s : str){
+					rawData.append(s.replaceAll("\\$", "").replaceAll("\\,", "").replaceAll(" ", ","));
+					rawData.append("," + shipperNumber + "\n");
+				}
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			table.add(rawData.toString());
+			driver.findElementByPartialLinkText("Search").click();
+		}
+		
+		//output to CSV
+		Path file = Paths.get(folderPath, "shipperPayments.csv");
+		try {
+			Files.write(file, table, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			log("[ERROR]: Could not write file to bin.");
+		}
+		
+		return table;
+	}
+	
+	public void shipperSearch(String searchKey){
+		WebElement searchInput = driver.findElementByXPath("//input[@id='SEARCHSHIPP_search_field']");
+		WebElement searchButton = driver.findElementByXPath("//button[@id='SEARCHSHIPP_search_button']");
+		searchInput.sendKeys(searchKey);
+		searchButton.click();
 	}
 
 	public void log(String str){

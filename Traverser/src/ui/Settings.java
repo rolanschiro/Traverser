@@ -24,12 +24,16 @@ public class Settings {
 
 	protected Shell shlTraverserSettings;
 	private Text pathName;
-	private Text username;
-	private Text pass;
+	private Text alxUsername;
+	private Text alxPass;
+	private Text costcoUsername;
+	private Text costcoPass;
+
+	
 	private Properties prop;
 
 	File config = new File("config.properties");
-	
+
 	/**
 	 * Launch the application.
 	 * @param args
@@ -63,7 +67,7 @@ public class Settings {
 	 */
 	protected void createContents() {
 		shlTraverserSettings = new Shell();
-		shlTraverserSettings.setSize(375, 335);
+		shlTraverserSettings.setSize(375, 500);
 		shlTraverserSettings.setText("Traverser - Settings");
 		
 		InputStream input = null;
@@ -79,7 +83,7 @@ public class Settings {
 		
 		Label update = new Label(shlTraverserSettings, SWT.NONE);
 		update.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 9, SWT.BOLD));
-		update.setBounds(159, 241, 40, 15);
+		update.setBounds(159, 393, 40, 15);
 
 		Label lblMatrix = new Label(composite, SWT.NONE);
 		lblMatrix.setBounds(25, 10, 55, 15);
@@ -99,7 +103,7 @@ public class Settings {
 		lblPathVariables.setText("SETTINGS");
 		
 		Composite composite_1 = new Composite(shlTraverserSettings, SWT.NONE);
-		composite_1.setBounds(101, 262, 156, 25);
+		composite_1.setBounds(101, 414, 156, 25);
 		
 		Button saveButton = new Button(composite_1, SWT.NONE);
 		saveButton.addSelectionListener(new SelectionAdapter() {
@@ -115,8 +119,10 @@ public class Settings {
 					}
 
 					prop.setProperty("path", pathName.getText());
-					prop.setProperty("username", username.getText());
-					prop.setProperty("password", pass.getText());
+					prop.setProperty("alxUsername", alxUsername.getText());
+					prop.setProperty("alxPassword", alxPass.getText());
+					prop.setProperty("costcoUsername", costcoUsername.getText());
+					prop.setProperty("costcoPassword", costcoPass.getText());
 					
 					prop.store(output, null);
 					
@@ -151,32 +157,66 @@ public class Settings {
 		composite_2.setBounds(20, 145, 329, 81);
 
 		Label lblLogInCredentials = new Label(shlTraverserSettings, SWT.NONE);
-		lblLogInCredentials.setText("Log-In Credentials:");
+		lblLogInCredentials.setText("ALX Log-In Credentials:");
 		lblLogInCredentials.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD | SWT.ITALIC));
-		lblLogInCredentials.setBounds(24, 124, 106, 15);
+		lblLogInCredentials.setBounds(24, 124, 137, 15);
 		
 		Label lblUsername = new Label(composite_2, SWT.NONE);
 		lblUsername.setText("Username:");
 		lblUsername.setBounds(25, 10, 55, 15);
 		
-		username = new Text(composite_2, SWT.BORDER);
-		username.setBounds(104, 7, 204, 21);
+		alxUsername = new Text(composite_2, SWT.BORDER);
+		alxUsername.setBounds(104, 7, 204, 21);
 		try {
-			username.setText(prop.getProperty("username"));
+			alxUsername.setText(prop.getProperty("alxUsername"));
 		} catch (Exception e2) {
-			username.setText("");
+			alxUsername.setText("");
 		}
 			Label lblPassword = new Label(composite_2, SWT.NONE);
 		lblPassword.setText("Password:");
 		lblPassword.setBounds(25, 49, 55, 15);
 		
-		pass = new Text(composite_2, SWT.BORDER | SWT.PASSWORD);
-		pass.setBounds(104, 46, 204, 21);
+		alxPass = new Text(composite_2, SWT.BORDER | SWT.PASSWORD);
+		alxPass.setBounds(104, 46, 204, 21);
 		try {
-			pass.setText(prop.getProperty("password"));
+			alxPass.setText(prop.getProperty("alxPassword"));
 		} catch (Exception e2) {
-			pass.setText("");
+			alxPass.setText("");
 		}
+		
+		Label lblCostcoLoginCredentials = new Label(shlTraverserSettings, SWT.NONE);
+		lblCostcoLoginCredentials.setText("Costco Log-In Credentials:");
+		lblCostcoLoginCredentials.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD | SWT.ITALIC));
+		lblCostcoLoginCredentials.setBounds(24, 262, 156, 15);
+		
+		Composite composite_3 = new Composite(shlTraverserSettings, SWT.BORDER);
+		composite_3.setBounds(20, 283, 329, 81);
+		
+		Label label_1 = new Label(composite_3, SWT.NONE);
+		label_1.setText("Username:");
+		label_1.setBounds(25, 10, 55, 15);
+		
+		costcoUsername = new Text(composite_3, SWT.BORDER);
+		costcoUsername.setBounds(104, 7, 204, 21);
+		try {
+			costcoUsername.setText(prop.getProperty("costcoUsername"));
+		} catch (Exception e2) {
+			costcoUsername.setText("");
+		}
+
+		
+		Label label_2 = new Label(composite_3, SWT.NONE);
+		label_2.setText("Password:");
+		label_2.setBounds(25, 49, 55, 15);
+		
+		costcoPass = new Text(composite_3, SWT.BORDER | SWT.PASSWORD);
+		costcoPass.setBounds(104, 46, 204, 21);
+		try {
+			costcoPass.setText(prop.getProperty("costcoPassword"));
+		} catch (Exception e2) {
+			costcoPass.setText("");
+		}
+
 	
 		
 
