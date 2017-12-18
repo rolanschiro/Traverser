@@ -12,6 +12,8 @@ import java.util.List;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+//DEPRECATED, DO NOT USE
+
 public class EDIProgram {
 	final static String PATH = "C:/Users/rolan.schiro/Desktop/EDI Files/";
 	final static File MATRIX = new File(PATH + "matrix.csv");

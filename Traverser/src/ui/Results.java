@@ -33,16 +33,8 @@ public class Results {
 	private Composite composite;
 	private Table table;
 	private TableViewer tableViewer;
-	private TableColumn colPO;
-	private TableViewerColumn tableViewerColumn;
-	private TableColumn colEFJ;
-	private TableViewerColumn tableViewerColumn_1;
-	private TableColumn colOffice;
-	private TableViewerColumn tableViewerColumn_2;
-	private TableColumn colRevisedLoad;
-	private TableViewerColumn tableViewerColumn_3;
-	private TableColumn colShipID;
-	private TableViewerColumn tableViewerColumn_4;
+	
+	private ArrayList<TableColumn> cols = new ArrayList<TableColumn>();
 	private ArrayList<String> results;
 
 	/**
@@ -54,7 +46,6 @@ public class Results {
 		arr.add("12030627380,3647173,FL,3637987,1");
 		arr.add("12030627380,3647173,FL,3637987,2");
 		arr.add("12030627380,3647173,FL,3637987,3");
-
 		
 		try {
 			Results window = new Results(arr);
@@ -88,25 +79,47 @@ public class Results {
 	 * Create contents of the window.
 	 */
 	protected void createContents() {
+		
 		shlResults = new Shell();
-		shlResults.setSize(492, 298);
 		shlResults.setText("Results");
 		shlResults.setLayout(new FormLayout());
+
 		
 		composite = new Composite(shlResults, SWT.NONE);
 		composite.setBounds(139, 108, 64, 64);
-		FormData fd_composite = new FormData();
-		fd_composite.bottom = new FormAttachment(0, 252);
-		fd_composite.right = new FormAttachment(0, 466);
-		fd_composite.top = new FormAttachment(0, 44);
-		fd_composite.left = new FormAttachment(0, 10);
-		composite.setLayoutData(fd_composite);
+		
 		TableColumnLayout tcl_composite = new TableColumnLayout();
 		composite.setLayout(tcl_composite);
 		
 		tableViewer = new TableViewer(composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
+		for(String str : results.get(0).split(",")){		
+			TableColumn column = createColumn(str, tcl_composite);
+			cols.add(column);
+		}
+		results.remove(0);
+		
+		shlResults.pack();
+
+		int width = (cols.get(0).getWidth() * cols.size());
+
+		FormData fd_composite = new FormData();
+		fd_composite.bottom = new FormAttachment(0, 300);
+		fd_composite.right = new FormAttachment(0, width + 35);
+		fd_composite.top = new FormAttachment(0, 44);
+		fd_composite.left = new FormAttachment(0, 10);
+		composite.setLayoutData(fd_composite);
+		
 		table = tableViewer.getTable();
-		table.pack();
+		
+		shlResults.update();
+
+		shlResults.setSize(width + 50, 350);
+
+    	System.out.println(width);
+	   	System.out.println(table.getSize());
+    	System.out.println(composite.getSize());
+    	System.out.println(shlResults.getSize());
+
 		table.addKeyListener(new KeyAdapter() {
 			@SuppressWarnings("static-access")
 			@Override
@@ -114,9 +127,11 @@ public class Results {
 		        if (e.stateMask == SWT.CTRL && e.keyCode == 'c') {
 		        	StringBuilder str = new StringBuilder();
 		            for(TableItem item : table.getSelection()){
-		            	for(int i = 0; i < 5; i++){
+		            	System.out.println(item.getBounds().width);
+		            	for(int i = 0; i < cols.size() - 1; i++){
 								str.append(item.getText(i) + "	");
 						}
+		            	str.append(item.getText(cols.size()- 1));
 						str.append("\n");
 		            }
 		            
@@ -129,48 +144,59 @@ public class Results {
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
 		
-		tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
-		colPO = tableViewerColumn.getColumn();
-		colPO.setResizable(false);
-		colPO.setText("PO");
-		tcl_composite.setColumnData(colPO, new ColumnPixelData(96, true, true));
-		
-		tableViewerColumn_1 = new TableViewerColumn(tableViewer, SWT.CENTER);
-		colEFJ = tableViewerColumn_1.getColumn();
-		colEFJ.setResizable(false);
-		tcl_composite.setColumnData(colEFJ, new ColumnPixelData(70, true, true));
-		colEFJ.setText("EFJ");
-		
-		tableViewerColumn_2 = new TableViewerColumn(tableViewer, SWT.CENTER);
-		colOffice = tableViewerColumn_2.getColumn();
-		colOffice.setResizable(false);
-		tcl_composite.setColumnData(colOffice, new ColumnPixelData(82, true, true));
-		colOffice.setText("OFFICE");
-		
-		tableViewerColumn_3 = new TableViewerColumn(tableViewer, SWT.CENTER);
-		colRevisedLoad = tableViewerColumn_3.getColumn();
-		colRevisedLoad.setResizable(false);
-		tcl_composite.setColumnData(colRevisedLoad, new ColumnPixelData(100, true, true));
-		colRevisedLoad.setText("REVISED LOAD");
-		
-		tableViewerColumn_4 = new TableViewerColumn(tableViewer, SWT.CENTER);
-		colShipID = tableViewerColumn_4.getColumn();
-		colShipID.setResizable(false);
-		tcl_composite.setColumnData(colShipID, new ColumnPixelData(84, true, true));
-		colShipID.setText("SHIP ID");
+//		tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
+//		colPO = tableViewerColumn.getColumn();
+//		colPO.setResizable(false);
+//		colPO.setText("PO");
+//		tcl_composite.setColumnData(colPO, new ColumnPixelData(96, true, true));
+//		
+//		tableViewerColumn_1 = new TableViewerColumn(tableViewer, SWT.CENTER);
+//		colEFJ = tableViewerColumn_1.getColumn();
+//		colEFJ.setResizable(false);
+//		tcl_composite.setColumnData(colEFJ, new ColumnPixelData(70, true, true));
+//		colEFJ.setText("EFJ");
+//		
+//		tableViewerColumn_2 = new TableViewerColumn(tableViewer, SWT.CENTER);
+//		colOffice = tableViewerColumn_2.getColumn();
+//		colOffice.setResizable(false);
+//		tcl_composite.setColumnData(colOffice, new ColumnPixelData(82, true, true));
+//		colOffice.setText("OFFICE");
+//		
+//		tableViewerColumn_3 = new TableViewerColumn(tableViewer, SWT.CENTER);
+//		colRevisedLoad = tableViewerColumn_3.getColumn();
+//		colRevisedLoad.setResizable(false);
+//		tcl_composite.setColumnData(colRevisedLoad, new ColumnPixelData(100, true, true));
+//		colRevisedLoad.setText("REVISED LOAD");
+//		
+//		tableViewerColumn_4 = new TableViewerColumn(tableViewer, SWT.CENTER);
+//		colShipID = tableViewerColumn_4.getColumn();
+//		colShipID.setResizable(false);
+//		tcl_composite.setColumnData(colShipID, new ColumnPixelData(84, true, true));
+//		colShipID.setText("SHIP ID");
 		
 		Label lblNewLabel = new Label(shlResults, SWT.NONE);
 		lblNewLabel.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 11, SWT.BOLD));
 		FormData fd_lblNewLabel = new FormData();
 		fd_lblNewLabel.top = new FormAttachment(0, 10);
-		fd_lblNewLabel.left = new FormAttachment(0, 177);
+		fd_lblNewLabel.left = new FormAttachment(0, (width - 25)/2);
 		lblNewLabel.setLayoutData(fd_lblNewLabel);
-		lblNewLabel.setText("Completed EDIs");
+		lblNewLabel.setText("Results");
 		
 		for (String str : results){
 			TableItem t = new TableItem(table, SWT.CENTER);
 			t.setText(str.split(","));
 		}
+	}
+	
+	public TableColumn createColumn(String header, TableColumnLayout tcl){
+		TableViewerColumn tableViewerCol = new TableViewerColumn(tableViewer, SWT.CENTER);
+		TableColumn column = tableViewerCol.getColumn();
+		tcl.setColumnData(column, new ColumnPixelData(100, true, true));
 		
+		column.setText(header);
+		
+		return column;
 	}
 }
+
+

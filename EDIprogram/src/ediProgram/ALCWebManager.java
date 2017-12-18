@@ -219,6 +219,7 @@ public class ALCWebManager {
 
 		}
 		else{
+			driver.switchTo().defaultContent();
 			driver.switchTo().window(driver.getWindowHandle());
 			webelems.get(0).click();
 			driver.switchTo().frame(0);
@@ -323,7 +324,6 @@ public class ALCWebManager {
 		boolean c = true;
 
 		//check origin zip codes EXACT MATCH
-
 		driver.findElementByXPath("//span[text()='Pick Up Info']").click();
 
 		if(!(e.getOriginZip().equals(driver.findElementByXPath("//td[@headers='Zip']/input").getAttribute("value")))){
@@ -523,6 +523,7 @@ public class ALCWebManager {
 
 	public ArrayList<String> aggregateData(String folderPath){
 		ArrayList <String> table = new ArrayList<String>();
+		String separator = ",";
 		table.add("File #,Load ID,Billed Amount,ADJ,Paid Amount,Balance Due,Days Old,Shipper #");
 		//shipper list on ALX, index starts at 1, skipping header
 		for(int index = 2; true; index++){
@@ -548,8 +549,8 @@ public class ALCWebManager {
 				}
 				
 				for(String s : str){
-					rawData.append(s.replaceAll("\\$", "").replaceAll("\\,", "").replaceAll(" ", ","));
-					rawData.append("," + shipperNumber + "\n");
+					rawData.append(s.replaceAll("\\$", "").replaceAll("\\,", "").replaceAll(" ", separator));
+					rawData.append(separator + shipperNumber + "\n");
 				}
 				
 			} catch (Exception e) {

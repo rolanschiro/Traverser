@@ -92,7 +92,7 @@ public class Main {
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
 			
-			updateSystemOutput(exceptionAsString);
+			System.out.println(exceptionAsString);
 			saveLog("(errorlog)");
 		}
 		shlTraverser.open();
@@ -155,7 +155,7 @@ public class Main {
 
 		System.setProperty("webdriver.chrome.driver", PATH + "/chromedriver.exe/");
 		ChromeDriver driver = new ChromeDriver();
-		driver.manage().window().setPosition(new Point(0, -2000));
+//		driver.manage().window().setPosition(new Point(0, -2000));
 
 		ALCWebManager webManager = new ALCWebManager(driver);
 
@@ -354,7 +354,7 @@ public class Main {
 				Thread s = new Thread(){
 					public void run(){
 						updateProgressBar(0);
-						webManager.EDIlogIn(prop.getProperty("username"), prop.getProperty("password"));
+						webManager.EDIlogIn(prop.getProperty("alxUsername"), prop.getProperty("alxPassword"));
 						updateProgressBar(5);
 						webManager.setEDISearchSettings(cust, "N", start, end, rows);
 						webManager.search();
@@ -498,7 +498,6 @@ public class Main {
 						incompleteEDIs.clear();
 
 						updateProgressBar(100);
-						ediResults.remove(0);
 						saveLog();
 						createEFJsButton.getDisplay().syncExec(new Runnable(){
 						      public void run() {
@@ -565,7 +564,7 @@ public class Main {
 					public void run(){
 						
 						updateProgressBar(0);
-						webManager.EDIlogIn(prop.getProperty("username"), prop.getProperty("password"));
+						webManager.EDIlogIn(prop.getProperty("alxUsername"), prop.getProperty("alxPassword"));
 						updateProgressBar(5);
 						webManager.setEDISearchSettings(cust , "N", start, end, rows);
 						webManager.search();
@@ -713,8 +712,8 @@ public class Main {
 		lblCostco.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 12, SWT.BOLD));
 		lblCostco.setBounds(113, 10, 68, 21);
 		
-		Button btnTest = new Button(composite, SWT.NONE);
-		btnTest.addSelectionListener(new SelectionAdapter() {
+		Button btnRun = new Button(composite, SWT.NONE);
+		btnRun.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 
@@ -737,8 +736,6 @@ public class Main {
 							ArrayList<String> results = new ArrayList<String>();
 							results.add("Office,File #,Load ID,Billed Amount,ADJ,Paid Amount,Balance Due,Days Old,Shipper #,Status");
 							updateProgressBar(20);
-							updateSystemOutput("" + PAYMENTS.size());
-							updateSystemOutput("" + INVOICES.size());
 								
 							for(Invoice invoice:INVOICES){
 								String invLoadNum = invoice.getLOAD_ID();
@@ -748,9 +745,9 @@ public class Main {
 									if(invLoadNum.equals(payment.getLOAD_ID())){
 										paymentSum += payment.getPAID_AMOUNT();
 										
-										double paidAmount = Math.round(invoice.getPAID_AMOUNT() + paymentSum);
-										invoice.setPAID_AMOUNT(paidAmount);
-										double balanceDue = Math.round(invoice.getBALANCE_DUE() - paymentSum);
+										invoice.setPAID_AMOUNT(Math.round(paymentSum));
+										
+										double balanceDue = Math.round((invoice.getBALANCE_DUE() - paymentSum));
 										invoice.setBALANCE_DUE(balanceDue);
 										
 										invoice.setSTATUS("PENDING");
@@ -767,6 +764,10 @@ public class Main {
 								}
 							}
 							
+							updateSystemOutput("COSTCO PAYMENTS = " + PAYMENTS.size());
+							updateSystemOutput("ALX INVOICES = " + INVOICES.size());
+							updateSystemOutput("\nTOTAL OCCURENCES = " + results.size());
+							
 							Path costco_results = Paths.get(costco.getAbsolutePath(), "results.csv");
 
 							try {
@@ -776,8 +777,17 @@ public class Main {
 								e.printStackTrace();
 							}
 							
-							updateSystemOutput("Complete!");
+							updateSystemOutput("\nComplete!");
+
 							updateProgressBar(100);
+							
+							createEFJsButton.getDisplay().syncExec(new Runnable(){
+							      public void run() {
+							    	  Results window = new Results(results);
+							    	  window.open();
+							      }
+							});
+
 						}
 				};
 				
@@ -798,8 +808,8 @@ public class Main {
 					test.start();
 			}
 		});
-		btnTest.setBounds(64, 75, 75, 66);
-		btnTest.setText("Run");
+		btnRun.setBounds(64, 75, 75, 66);
+		btnRun.setText("Run");
 		
 		Button btnCreateAlxReport = new Button(composite, SWT.NONE);
 		btnCreateAlxReport.addSelectionListener(new SelectionAdapter() {

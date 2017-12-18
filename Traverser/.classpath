@@ -16,5 +16,6 @@
 	<classpathentry kind="lib" path="C:/Users/rolan.schiro/.p2/pool/plugins/org.eclipse.ui.forms_3.7.1.v20161220-1635.jar" sourcepath="C:/Users/rolan.schiro/.p2/pool/plugins/org.eclipse.ui.forms_3.7.1.v20161220-1635.jar"/>
 	<classpathentry kind="lib" path="swing2swt.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/EDIprogram"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/client-combined-3.8.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
