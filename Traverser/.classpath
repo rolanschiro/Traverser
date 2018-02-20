@@ -15,7 +15,14 @@
 	<classpathentry kind="lib" path="C:/Users/rolan.schiro/.p2/pool/plugins/com.ibm.icu_56.1.0.v201601250100.jar" sourcepath="C:/Users/rolan.schiro/.p2/pool/plugins/com.ibm.icu_56.1.0.v201601250100.jar"/>
 	<classpathentry kind="lib" path="C:/Users/rolan.schiro/.p2/pool/plugins/org.eclipse.ui.forms_3.7.1.v20161220-1635.jar" sourcepath="C:/Users/rolan.schiro/.p2/pool/plugins/org.eclipse.ui.forms_3.7.1.v20161220-1635.jar"/>
 	<classpathentry kind="lib" path="swing2swt.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/EDIprogram"/>
 	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/client-combined-3.8.1.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/byte-buddy-1.7.5.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/commons-exec-1.3.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/gson-2.8.2.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/guava-23.0.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/httpclient-4.5.3.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/selenium-java-3.8.1/libs/httpcore-4.4.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

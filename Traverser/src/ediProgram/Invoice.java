@@ -8,10 +8,11 @@ public class Invoice {
 	private double BILLED_AMOUNT = 0;
 	private String ADJ = "";
 	private double PAID_AMOUNT = 0;
+	private double SCHEDULED_PAYMENT = 0;
 	private double BALANCE_DUE = 0;
 	private String DAYS_OLD = "";
 	private String SHIPPER_NUMBER = "";
-	private String STATUS = "MISSING";
+	private String SCHEDULED_PAYMENT_DATE = "";
 	
 	public Invoice(String dataString){
 		String [] data = dataString.split(",");
@@ -100,16 +101,23 @@ public class Invoice {
 		SHIPPER_NUMBER = sHIPPER_NUMBER;
 	}
 
-	public String getSTATUS() {
-		return STATUS;
+	public String getSCHEDULED_PAYMENT_DATE() {
+		return SCHEDULED_PAYMENT_DATE;
 	}
 
-	public void setSTATUS(String sTATUS) {
-		STATUS = sTATUS;
+	public void setSCHEDULED_PAYMENT_DATE(String payment_date) {
+		SCHEDULED_PAYMENT_DATE = payment_date;
 	}
-	
+	public double getSCHEDULED_PAYMENT() {
+		return SCHEDULED_PAYMENT;
+	}
+
+	public void setSCHEDULED_PAYMENT(double sCHEDULED_PAYMENT) {
+		SCHEDULED_PAYMENT = sCHEDULED_PAYMENT;
+	}
+
 	public String toString(){
-		String str = OFFICE + "," + FILE_NUMBER + "," + LOAD_ID + "," + BILLED_AMOUNT + "," + ADJ + "," + PAID_AMOUNT + "," + BALANCE_DUE + "," + DAYS_OLD + "," + SHIPPER_NUMBER + "," + STATUS;
+		String str = OFFICE + "," + FILE_NUMBER + "," + SHIPPER_NUMBER + "," + LOAD_ID + "," + BILLED_AMOUNT + "," + ADJ + "," + PAID_AMOUNT + "," + DAYS_OLD + "," + SCHEDULED_PAYMENT + "," + SCHEDULED_PAYMENT_DATE + "," + BALANCE_DUE + ",";
 		return str;
 	}
 }

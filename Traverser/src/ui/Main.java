@@ -155,11 +155,9 @@ public class Main {
 
 		System.setProperty("webdriver.chrome.driver", PATH + "/chromedriver.exe/");
 		ChromeDriver driver = new ChromeDriver();
-//		driver.manage().window().setPosition(new Point(0, -2000));
 
 		ALCWebManager webManager = new ALCWebManager(driver);
 
-		
 		shlTraverser = new Shell();
 		shlTraverser.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent arg0) {
@@ -224,15 +222,17 @@ public class Main {
 		progressBar.setBounds(10, 237, 307, 17);
 		
 		CTabFolder tabFolder = new CTabFolder(shlTraverser, SWT.BORDER);
+		tabFolder.setMRUVisible(true);
 		tabFolder.setBounds(10, 0, 307, 231);
 		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		
 		CTabItem tabEDI = new CTabItem(tabFolder, SWT.NONE);
 		tabEDI.setText("Auto EDI");
 		
-		
 		Composite inputComposite = new Composite(tabFolder, SWT.NONE);
 		tabEDI.setControl(inputComposite);
+		
+		tabFolder.setSelection(tabEDI);
 		
 		Label lblStartDate = new Label(inputComposite, SWT.NONE);
 		lblStartDate.setBounds(57, 40, 55, 15);
@@ -734,28 +734,30 @@ public class Main {
 							updateProgressBar(10);
 							ArrayList<Invoice> INVOICES = parseInvoices();
 							ArrayList<String> results = new ArrayList<String>();
-							results.add("Office,File #,Load ID,Billed Amount,ADJ,Paid Amount,Balance Due,Days Old,Shipper #,Status");
+							results.add("Office,File #,Shipper #,Load ID,Billed Amount,ADJ,Paid Amount,Days Old,Scheduled Payment,Scheduled Payment Date,Balance Due");
 							updateProgressBar(20);
 								
 							for(Invoice invoice:INVOICES){
 								String invLoadNum = invoice.getLOAD_ID();
 								double paymentSum = 0;
+								double scheduledSum = 0;
+								double balanceDue = invoice.getBALANCE_DUE();
+								
 								for(Payment payment : PAYMENTS){
-
+									
 									if(invLoadNum.equals(payment.getLOAD_ID())){
 										paymentSum += payment.getPAID_AMOUNT();
-										
-										invoice.setPAID_AMOUNT(Math.round(paymentSum));
-										
-										double balanceDue = Math.round((invoice.getBALANCE_DUE() - paymentSum));
-										invoice.setBALANCE_DUE(balanceDue);
-										
-										invoice.setSTATUS("PENDING");
+										scheduledSum += payment.getSCHEDULED_PAYMENT();
+										if(payment.getSCHEDULED_PAYMENT() > 0)
+											invoice.setSCHEDULED_PAYMENT_DATE(payment.getSCHEDULED_DATE());					
 									}
 								}
+								invoice.setPAID_AMOUNT(paymentSum);
+								invoice.setSCHEDULED_PAYMENT(scheduledSum);				
+
+								invoice.setBALANCE_DUE(Math.round((balanceDue - (paymentSum + scheduledSum)) * 100.0) / 100.0);									
+
 								if(invoice.getBALANCE_DUE() > 0){
-									if(invoice.getPAID_AMOUNT() > 0)									
-										invoice.setSTATUS("SHORT-PAID");
 									results.add(invoice.toString());
 								}
 								
@@ -764,9 +766,9 @@ public class Main {
 								}
 							}
 							
-							updateSystemOutput("COSTCO PAYMENTS = " + PAYMENTS.size());
-							updateSystemOutput("ALX INVOICES = " + INVOICES.size());
-							updateSystemOutput("\nTOTAL OCCURENCES = " + results.size());
+							updateSystemOutput("COSTCO PAYMENTS = " + (PAYMENTS.size() - 1));
+							updateSystemOutput("ALX INVOICES = " + (INVOICES.size() - 1));
+							updateSystemOutput("\nTOTAL OCCURENCES = " + (results.size() - 1));
 							
 							Path costco_results = Paths.get(costco.getAbsolutePath(), "results.csv");
 
@@ -808,7 +810,7 @@ public class Main {
 					test.start();
 			}
 		});
-		btnRun.setBounds(64, 75, 75, 66);
+		btnRun.setBounds(94, 56, 108, 66);
 		btnRun.setText("Run");
 		
 		Button btnCreateAlxReport = new Button(composite, SWT.NONE);
@@ -833,7 +835,7 @@ public class Main {
 				t.start();
 			}
 		});
-		btnCreateAlxReport.setBounds(145, 75, 108, 25);
+		btnCreateAlxReport.setBounds(94, 128, 108, 25);
 		btnCreateAlxReport.setText("Create ALX Report");
 	}
 	
@@ -927,8 +929,6 @@ public class Main {
 				payments.add(p);
 			}
 		}
-
-		
 		return payments;
 	}
 
@@ -947,7 +947,6 @@ public class Main {
 				invoices.add(i);
 			}
 		}
-
 		return invoices;
 	}
 

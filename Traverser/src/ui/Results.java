@@ -4,7 +4,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.jface.viewers.TableViewer;
@@ -21,7 +20,6 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Label;
@@ -53,6 +51,7 @@ public class Results {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 	}
 
 	/**
@@ -87,7 +86,7 @@ public class Results {
 		
 		composite = new Composite(shlResults, SWT.NONE);
 		composite.setBounds(139, 108, 64, 64);
-		
+
 		TableColumnLayout tcl_composite = new TableColumnLayout();
 		composite.setLayout(tcl_composite);
 		
@@ -141,38 +140,9 @@ public class Results {
 		        }
 			}
 		});
+		
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
-		
-//		tableViewerColumn = new TableViewerColumn(tableViewer, SWT.CENTER);
-//		colPO = tableViewerColumn.getColumn();
-//		colPO.setResizable(false);
-//		colPO.setText("PO");
-//		tcl_composite.setColumnData(colPO, new ColumnPixelData(96, true, true));
-//		
-//		tableViewerColumn_1 = new TableViewerColumn(tableViewer, SWT.CENTER);
-//		colEFJ = tableViewerColumn_1.getColumn();
-//		colEFJ.setResizable(false);
-//		tcl_composite.setColumnData(colEFJ, new ColumnPixelData(70, true, true));
-//		colEFJ.setText("EFJ");
-//		
-//		tableViewerColumn_2 = new TableViewerColumn(tableViewer, SWT.CENTER);
-//		colOffice = tableViewerColumn_2.getColumn();
-//		colOffice.setResizable(false);
-//		tcl_composite.setColumnData(colOffice, new ColumnPixelData(82, true, true));
-//		colOffice.setText("OFFICE");
-//		
-//		tableViewerColumn_3 = new TableViewerColumn(tableViewer, SWT.CENTER);
-//		colRevisedLoad = tableViewerColumn_3.getColumn();
-//		colRevisedLoad.setResizable(false);
-//		tcl_composite.setColumnData(colRevisedLoad, new ColumnPixelData(100, true, true));
-//		colRevisedLoad.setText("REVISED LOAD");
-//		
-//		tableViewerColumn_4 = new TableViewerColumn(tableViewer, SWT.CENTER);
-//		colShipID = tableViewerColumn_4.getColumn();
-//		colShipID.setResizable(false);
-//		tcl_composite.setColumnData(colShipID, new ColumnPixelData(84, true, true));
-//		colShipID.setText("SHIP ID");
 		
 		Label lblNewLabel = new Label(shlResults, SWT.NONE);
 		lblNewLabel.setFont(SWTResourceManager.getFont("Segoe UI Symbol", 11, SWT.BOLD));
