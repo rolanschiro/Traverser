@@ -17,6 +17,9 @@ public class EDI {
 	String RATE = null;
 	String LOAD_MANAGER = null; 
 	String STATUS = null;
+	String LOAD_VALUE = null;
+	
+
 	ArrayList <String> ERROR_LOG = new ArrayList<String>();
 
 	ArrayList <String> table = null; 
@@ -87,6 +90,9 @@ public class EDI {
 			setEquipment("DRY VAN");
 		else
 			setEquipment("REFRIGERATED");
+		
+		String[] LAD = this.parseRowsByID("LAD").get(1);
+		setLOAD_VALUE(LAD[10]);
 	}
 	
 	public boolean isComplete(){
@@ -194,6 +200,16 @@ public class EDI {
 		ERROR_LOG.add(error);
 	}
 
+	public String getLOAD_VALUE() {
+		return LOAD_VALUE;
+	}
+
+	public void setLOAD_VALUE(String lOAD_VALUE) {
+		LOAD_VALUE = lOAD_VALUE;
+	}
+
+	
+	
 	public String toString(){
 		String str;
 		str = 	"SHIP ID = " + getShipID() +

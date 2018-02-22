@@ -454,10 +454,10 @@ public class Main {
 						updateProgressBar(95);
 
 						ArrayList<String> ediResults = new ArrayList<String>();
-						ediResults.add("PO,EFJ,OFFICE,REVISED LOAD,SHIP ID");
+						ediResults.add("PO,EFJ,OFFICE,REVISED LOAD,SHIP ID,VALUE");
 						
 						for(EDI edi : ediRepository){
-							ediResults.add(edi.getPONumber() + "," + edi.getLoadNumber() + "," + edi.getOfficeName() + "," + edi.getStatus() + "," + edi.getShipID());
+							ediResults.add(edi.getPONumber() + "," + edi.getLoadNumber() + "," + edi.getOfficeName() + "," + edi.getStatus() + "," + edi.getShipID() + "," + edi.getLOAD_VALUE());
 						}
 						try {
 							Files.write(results, ediResults, StandardCharsets.UTF_8);
